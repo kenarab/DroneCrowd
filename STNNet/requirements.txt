@@ -1,5 +1,10 @@
-spatial-correlation-sampler
-sklearn
-h5py
-opencv-python
-matplotlib
+torch==1.6.0
+torchvision==0.7.0
+scikit-learn==0.23.1
+h5py==2.10.0
+opencv-python==4.3.0.36
+matplotlib==3.2.2
+numpy==1.19.5
+pillow==8.0.1
+tqdm==4.51.0
+spatial-correlation-sampler==0.3.0
