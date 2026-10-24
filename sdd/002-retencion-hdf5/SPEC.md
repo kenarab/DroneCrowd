@@ -127,3 +127,26 @@ autoriza montar, formatear ni usar un volumen de identidad dudosa.
   su implementación; la ejecución real depende todavía del resultado completo
   y del manifiesto concreto. No se autoriza retirar el archivo con cabecera
   inválida por la mera existencia de un generador.
+- El regenerador también admite `--reference-evidence`: verifica fuentes y
+  reconstruye mapas que ya no existen, comparando contra los hashes conservados
+  en el manifiesto. Un test CLI real elimina un HDF5 de prueba y lo regenera sin
+  el original. Veinte pruebas pasaron; cambio revisado por el mismo revisor.
+
+## Repetir una regeneración después de la retirada
+
+Con el entorno temporal configurado, crear un directorio nuevo y vacío y usar
+los registros permanentes. Este ejemplo reconstruye un único mapa de densidad:
+
+```sh
+destino=$(mktemp -d "$TMPDIR/dronecrowd-regenerado-XXXXXX")
+python3 scripts/regenerate_hdf5.py \
+  --root /home/alephbet/data/DroneCrowd \
+  --output-dir "$destino" \
+  --reference-evidence "$PWD/.private/hdf5-retencion-2026-10-24" \
+  --source train_data/ground_truth/img001002.h5
+```
+
+Admite hasta 12 mapas por prueba, incluyendo `_max.h5`, sin escribir sobre los
+datos originales. Una regeneración masiva requiere otro preflight y presupuesto
+de almacenamiento: producir todo el conjunto denso ocuparía otra vez unos
+404 GiB. La muestra pequeña no requiere el SSD ofrecido.

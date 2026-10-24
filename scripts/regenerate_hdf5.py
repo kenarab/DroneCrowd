@@ -1,10 +1,11 @@
 """Regenerate selected historical maps into a separate, new destination.
 
-The original sequence MAT files are the source of truth; XML conversion can
-lose historical corrections. Existing output files are never overwritten.
+The original sequence MAT files are the source of truth; XML and MAT have
+historical coordinate differences. Existing output files are never overwritten.
 """
 import argparse
 import ctypes as ct
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -14,6 +15,36 @@ import resource
 import numpy as np
 
 from audit_hdf5 import Annotations, HDF5Reader, reconstruct_density, reconstruct_localization
+
+
+def reference_metadata(root, evidence, selected):
+    """Validate preserved sources and find hashes even after originals retire."""
+    sources = json.loads((evidence / "sources.json").read_text())
+    if sources["root"] != str(root):
+        raise ValueError("Reference evidence belongs to another dataset")
+    for record in sources["files"]:
+        relative = Path(record["relative_path"])
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("Unsafe source path")
+        path = root / relative
+        if path.resolve(strict=True) != path:
+            raise ValueError("Source links are not allowed")
+        if hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+            raise ValueError(f"Preserved source changed: {relative}")
+    metadata = {}
+    with (evidence / "files.jsonl").open() as handle:
+        for line in handle:
+            record = json.loads(line)
+            if record["path"] in selected:
+                if (record.get("payload_verified") is not True
+                        or record.get("differences") != {} or record.get("error")):
+                    raise ValueError("Reference map was not verified")
+                if record["path"] in metadata:
+                    raise ValueError("Duplicate reference map")
+                metadata[record["path"]] = record["datasets"]
+    if set(metadata) != set(selected):
+        raise ValueError("Selected maps are missing from the reference evidence")
+    return metadata
 
 
 def write_new_file(path, arrays, reader):
@@ -59,6 +90,8 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source", action="append", required=True, help="Relative path of a map to regenerate")
+    parser.add_argument("--reference-evidence", type=Path,
+                        help="Preserved audit evidence; enables regeneration after original maps were retired")
     args = parser.parse_args()
     resource.setrlimit(resource.RLIMIT_AS, (1536 * 2**20, 1536 * 2**20))
     resource.setrlimit(resource.RLIMIT_FSIZE, (16 * 2**20, 16 * 2**20))
@@ -76,6 +109,8 @@ def main():
     if (output / "regeneration.json").exists():
         parser.error("Output report already exists")
     reader, annotations, records = HDF5Reader(), Annotations(root), []
+    references = (reference_metadata(root, args.reference_evidence.resolve(strict=True), args.source)
+                  if args.reference_evidence else None)
     for relative in args.source:
         parts = Path(relative).parts
         if (len(parts) != 3 or parts[0] not in ("train_data", "test_data")
@@ -85,26 +120,30 @@ def main():
         if not match:
             parser.error("Unrecognized map name")
         source = root / relative
-        if source.is_symlink() or source.resolve(strict=True) != source:
+        if source.is_symlink() or source.parent.resolve(strict=True) != source.parent:
             parser.error("Source links are not allowed")
         sequence, frame = map(int, match.groups()[:2])
         points = annotations.frame(sequence, frame)
         arrays = (reconstruct_localization(points) if match[3]
                   else {"density": reconstruct_density(points)})
-        original_metadata, _ = reader.read(source, True)
+        if references is None:
+            original_metadata, _ = reader.read(source, True)
+        else:
+            original_metadata = references[relative]
         destination = output / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         if destination.parent.resolve(strict=True) != destination.parent:
             raise ValueError("Output parent links are not allowed")
         write_new_file(destination, arrays, reader)
         regenerated_metadata, _ = reader.read(destination, True)
-        if original_metadata != regenerated_metadata:
+        if json.dumps(original_metadata, sort_keys=True) != json.dumps(regenerated_metadata, sort_keys=True):
             raise ValueError(f"Regenerated hashes/shapes/types differ: {relative}")
         records.append({"source": str(source), "regenerated": str(destination),
                         "datasets": regenerated_metadata, "bytes": destination.stat().st_size,
                         "hashes_equal": True})
     report = {"root": str(root), "output": str(output), "files": records,
-              "total_bytes": sum(r["bytes"] for r in records), "all_hashes_equal": True}
+              "total_bytes": sum(r["bytes"] for r in records), "all_hashes_equal": True,
+              "reference_evidence": str(args.reference_evidence) if args.reference_evidence else None}
     with (output / "regeneration.json").open("x") as handle:
         json.dump(report, handle, indent=2)
         handle.write("\n")

@@ -1,13 +1,16 @@
 """Independent dense references and safety checks for the read-only audit."""
 import ctypes as ct
+import hashlib
+import json
 import os
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
 import unittest
 
 import numpy as np
-from scipy import ndimage, spatial
+from scipy import io, ndimage, spatial
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from audit_hdf5 import HDF5Reader, reconstruct_density, reconstruct_localization
@@ -136,6 +139,34 @@ class ReaderTests(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             write_new_file(self.path, {"density": np.zeros((3, 4), dtype=np.float32)}, self.reader)
         self.assertEqual(self.path.read_bytes(), original)
+
+    def test_regenerates_from_manifest_after_original_map_is_removed(self):
+        base = Path(self.directory.name).resolve()
+        root, evidence, output = base / "dataset", base / "evidence", base / "output"
+        relative = "train_data/ground_truth/img001002.h5"
+        source = root / relative
+        source.parent.mkdir(parents=True)
+        annotations = root / "annotations"
+        annotations.mkdir()
+        annotation = annotations / "00001.mat"
+        io.savemat(annotation, {"anno": np.array([[1, 0, 0, 0, 20, 20]], dtype=float)})
+        arrays = {"density": reconstruct_density(np.array([[10, 10, 1]], dtype=float))}
+        write_new_file(source, arrays, self.reader)
+        metadata, _ = self.reader.read(source, True)
+        evidence.mkdir()
+        (evidence / "sources.json").write_text(json.dumps({"root": str(root), "files": [{
+            "relative_path": "annotations/00001.mat", "sha256": hashlib.sha256(annotation.read_bytes()).hexdigest()}]}))
+        (evidence / "files.jsonl").write_text(json.dumps({"path": relative, "payload_verified": True,
+                                                       "differences": {}, "datasets": metadata}) + "\n")
+        source.unlink()
+        output.mkdir()
+        script = Path(__file__).resolve().parents[1] / "scripts/regenerate_hdf5.py"
+        subprocess.run([sys.executable, str(script), "--root", str(root), "--output-dir", str(output),
+                        "--reference-evidence", str(evidence), "--source", relative],
+                       check=True, capture_output=True, text=True, timeout=30)
+        regenerated, _ = self.reader.read(output / relative, True)
+        self.assertEqual(metadata, regenerated)
+        self.assertFalse(source.exists())
 
 
 if __name__ == "__main__":
