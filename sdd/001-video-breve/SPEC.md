@@ -42,3 +42,10 @@ Versiones registradas, cambios del autor conservados, diagnóstico repetible,
 commit por incremento. Una ejecución sintética demuestra compatibilidad básica,
 no que haya pesos ni que funcione el video. Cerrar como parcial si faltan pesos,
 adaptación o video, con pasos concretos y espacio liberado real separado.
+
+## Estado del primer incremento
+
+Entorno ml/CUDA comprobado y núcleo STNNet adaptado para arranque offline;
+dos pruebas sintéticas pasaron tanto en CPU como en GPU con límites2GiB.
+Pendientes pesos verificados, video y adaptador de entrada/salida. No hubo
+entrenamiento ni borrado/movimiento de datos.

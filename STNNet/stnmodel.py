@@ -1,8 +1,5 @@
 import torch.nn as nn
 import torch
-from torchvision import models
-from spatial_correlation_sampler import SpatialCorrelationSampler
-from pointconv import PointConvDensitySetAbstraction
 import numpy as np
 import random
 import torch.nn.functional as F
@@ -40,7 +37,7 @@ def make_layers(cfg, in_channels=3, batch_norm=False):
 
 ##############################Space-Time Neighbor-Aware Network####################
 class STNNet(nn.Module):
-    def __init__(self, use_loc=False, use_trk=False):
+    def __init__(self, use_loc=False, use_trk=False, pretrained_backbone=True):
         super(STNNet, self).__init__()
         self.loc = use_loc
         self.trk = use_trk
@@ -88,6 +85,7 @@ class STNNet(nn.Module):
 
         if self.trk:
             # tracking output layers
+            from spatial_correlation_sampler import SpatialCorrelationSampler
             self.corr_layer1 = SpatialCorrelationSampler(1, 11, 1, 0, 1)
             self.corr_layer2 = SpatialCorrelationSampler(1, 11, 1, 0, 1)
             self.corr_layer3 = SpatialCorrelationSampler(1, 11, 1, 0, 1)
@@ -96,17 +94,21 @@ class STNNet(nn.Module):
             # graph layers
             self.gcn_layers = PointConvDensityClsSsg(num_classes=2, num_pt=128)
 
-        # load weights of the backbone network
-        mod = models.vgg16(pretrained = True)
+        # Keep historical training behaviour by default. A complete checkpoint
+        # can initialize every parameter offline without downloading VGG16.
+        if pretrained_backbone:
+            from torchvision import models
+            mod = models.vgg16(pretrained=True)
         self._initialize_weights()
-        my_models = self.backbone.state_dict()
-        pre_models = list(mod.state_dict().items())
-        count = 0
-        for layer_name, value in my_models.items():
-            prelayer_name, pre_weights = pre_models[count]
-            my_models[layer_name] = pre_weights
-            count += 1
-        self.backbone.load_state_dict(my_models)
+        if pretrained_backbone:
+            my_models = self.backbone.state_dict()
+            pre_models = list(mod.state_dict().items())
+            count = 0
+            for layer_name, value in my_models.items():
+                prelayer_name, pre_weights = pre_models[count]
+                my_models[layer_name] = pre_weights
+                count += 1
+            self.backbone.load_state_dict(my_models)
 
     def forward(self, imgset):
         base_g1, base_g2, base_g3 = [], [], []
@@ -298,6 +300,7 @@ def nms(featmap, kernel=7):
 ##############################Graph Convolutional Network#######################################
 class PointConvDensityClsSsg(nn.Module):
     def __init__(self, num_classes=2, num_pt=256):
+        from pointconv import PointConvDensitySetAbstraction
         super(PointConvDensityClsSsg, self).__init__()
         self.sa1 = PointConvDensitySetAbstraction(npoint=num_pt, nsample=8, in_channel=64 + 2, mlp=[64, 128],
                                                   bandwidth=0.1, group_all=False)

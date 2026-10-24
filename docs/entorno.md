@@ -35,7 +35,7 @@ el modelo al entorno actual. El camino corto a evaluar es STNNet con conteo,
 pesos completos y PyTorch existente. El módulo importa torchvision y extensiones
 de tracking incluso si sólo queremos conteo: hay que separar esas dependencias.
 También inicializa VGG16 con descarga automática; una carga de checkpoint completo
-debe poder omitir ese paso. Ninguna adaptación está validada por este documento.
+debe poder omitir ese paso. El diagnóstico base posterior se describe al final de este documento.
 
 El README de los autores enlaza un ZIP público de modelos; la página respondió200
 con título models.zip. No se descargaron ni inspeccionaron pesos y no se conoce
@@ -63,3 +63,33 @@ Revisión independiente de la infraestructura: Codex /root/revision_archivos,
 modelo efectivo desconocido; sin bloqueantes. Revisó exclusiones Git, sintaxis
 del wrapper y separación entre diagnóstico, futura inferencia y entrenamiento.
 La comprobación GPU la realizó el coordinador, no el revisor.
+
+## Núcleo STNNet compatible con ml
+
+Se añadió pretrained_backbone=False para iniciar desde un checkpoint completo
+sin descargar VGG16. El valor por defecto sigue siendo True para conservar
+la inicialización histórica. Las dependencias de correlación y PointConv se
+importan únicamente si se usa seguimiento. Así el conteo y la localización
+pueden arrancar con PyTorch y NumPy del venv ml sin instalar otros paquetes.
+
+Dos pruebas reales pasaron en CPU y RTX3060: conteo y localización, cada una con
+dos imágenes sintéticas32x32. Comprobaron forma de todas las salidas, valores
+finitos y ausencia de importaciones de tracking/torchvision en modo conteo.
+Tiempo de la suite:2,377s. El scope propio del diagnóstico quedó dentro del pool
+Nexo existente, con MemoryHigh1,5GiB, MemoryMax2GiB y swap0,5GiB; límites kernel
+verificados. No se ampliaron límites del pool ni de otros proyectos.
+
+Esto valida ejecución básica del núcleo con pesos aleatorios. No reproduce
+el entorno2020 ni valida checkpoints de los autores, conteos, entrenamiento,
+seguimiento o el video. Los scripts originales de benchmark siguen dependiendo
+de sus loaders y anotaciones; el adaptador a video está pendiente.
+
+Para repetir la suite, el coordinador debe aplicar un scope de recursos con
+esos límites antes de ejecutar ops/python-ml.sh -m unittest discover -s tests -v;
+DRONECROWD_TEST_CUDA=1 añade la GPU a las dos pruebas. No usar la suite para
+decidir exactitud ni generar resultados científicos con parámetros aleatorios.
+
+Revisión independiente del incremento de modelo: Codex /root/revision_archivos,
+modelo efectivo desconocido; sin bloqueantes. Conserva firma previa, capas y
+claves del state_dict y el valor predeterminado de inicialización. Revisión
+estática; no ejecutó GPU ni certificó pesos o calidad.
