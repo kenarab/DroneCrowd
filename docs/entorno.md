@@ -101,3 +101,24 @@ continuar en una nueva sesión del fork. Reemplaza la búsqueda de copias antigu
 como siguiente paso. Al preparar el traspaso la ruta aún no existía; confirmar
 finalización y verificar archivos. Pesos/adaptador e inferencia real siguen
 pendientes. [SPEC vigente](../sdd/001-video-breve/SPEC.md).
+
+## Adaptación de video verificada el 24/10/2026
+
+Se volvió a consultar el venv ml: Python3.13.13, PyTorch2.14.1, NumPy2.5.4,
+SciPy1.18.1 y scikit-learn1.9.1. Se usa el entorno existente sin instalar,
+actualizar ni bajar versiones. Es una adaptación al entorno moderno; no se
+recreó el entorno histórico Python3.6/PyTorch1.6 ni se validan sus pines.
+
+La entrada de video usa FFmpeg/FFprobe8.0.1 ya disponibles fuera del venv.
+El conteo requiere sólo PyTorch y NumPy; evita los loaders históricos que
+importan torchvision, Pillow, OpenCV e h5py. No necesita las extensiones de
+correlación/PointConv del seguimiento. El reporte visual de entradas se generó
+con Matplotlib/Pillow ya existentes en el Python base, con caché propia en el
+temporal autorizado; no se añadieron al venv ml.
+
+Se verificaron nueve fotogramas reales de los tres videos con hashes/PTS y
+límites kernel2GiB. Doce tests de los adaptadores pasaron en CPU. Esto se suma
+a las pruebas sintéticas del núcleo en CPU/GPU ya documentadas, sin repetir
+benchmarks. Falta comprobar la compatibilidad del checkpoint real: el enlace
+oficial de modelos respondió cuota excedida en Drive. No se ejecutó inferencia
+entrenada ni se midió calidad sobre la marcha.

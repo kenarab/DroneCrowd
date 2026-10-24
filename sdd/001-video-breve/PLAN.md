@@ -10,8 +10,8 @@ Entrada: [SPEC](SPEC.md). Responsable: nueva sesión de DroneCrowd.
 - [x] Inventariar los tres videos y verificar metadatos, muestras decodificadas y hashes.
 - [x] Reconsultar recursos y preflight Nexo tras liberar los mapas históricos.
 - [ ] Verificar y obtener una variante de pesos entrenados dentro del presupuesto.
-- [ ] Implementar decodificación/muestreo/normalización y carga estricta de pesos.
-- [ ] Probar límites/checkpoints incompatibles con fixtures sintéticos.
+- [x] Implementar decodificación/muestreo/normalización y carga estricta de pesos.
+- [x] Probar límites/checkpoints incompatibles con fixtures sintéticos.
 - [ ] Ejecutar máximo30 fotogramas de un video durante máximo120s.
 - [ ] Revisar fotogramas/mapas/conteos, registrar recursos, limitaciones y fallos.
 - [ ] Entregar recomendación al autor sobre continuar y conservar/retirar datos.

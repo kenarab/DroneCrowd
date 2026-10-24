@@ -22,10 +22,11 @@ benchmark y no son todavía una interfaz de video independiente.
 [Plan y criterio de cierre](../sdd/001-video-breve/SPEC.md).
 [Entorno y diagnóstico](entorno.md).
 
-Pedido vigente del autor: continuar desde este repo con videos que están subiendo
-a ~/home.agents/data/marchauniversitaria. [Traspaso operativo](traspaso-video-marcha-2026-10-24.md).
-La nueva sesión comprobará finalización de la subida, pesos y recursos antes de
-ejecutar la muestra; no se lanzó inferencia real desde Nexo.
+Pedido vigente del autor: probar STNNet sobre los videos aportados en
+~/home.agents/data/marchaUniversitaria241002. Se prepararon nueve fotogramas
+verificados y el adaptador de conteo, con pruebas y límites de memoria/tiempo.
+La inferencia entrenada sigue pendiente: el enlace oficial de pesos respondió
+cuota excedida en Drive. [Estado y reproducción](../sdd/001-video-breve/SPEC.md).
 
 ## Retención de mapas históricos
 

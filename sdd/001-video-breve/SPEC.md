@@ -220,3 +220,49 @@ inferencia pendiente. Estado: `outputs/video-breve/20261024-estado.json`.
 Revisión independiente: Codex `/root/revision_retencion_hdf5`, modelo efectivo
 no expuesto; aprobó muestreador, guardas, pruebas y separación de evidencia.
 El lanzador ml fija `~/home.codex/tmp`, alias físico del temporal autorizado.
+
+### Adaptador de conteo preparado; inferencia pendiente
+
+`scripts/count_video.py` valida el manifiesto y los RGB antes de leerlos, acepta
+sólo un checkpoint completo de densidad por nombres/formas/tipos, verifica
+SHA-256 y usa `torch.load(weights_only=True, map_location="cpu")`. Normaliza
+únicamente el prefijo inicial `module.` con rechazo de colisiones. No copia
+pesos por posición ni descarta silenciosamente claves de otras variantes.
+
+Aplica RGB/ImageNet, cuatro cuadrantes secuenciales y el factor100 del evaluador
+histórico. Guarda conteos por PTS, sumas crudas por cuadrante, mapas NPY y un
+manifiesto de ejecución/fallo; no suma personas únicas ni mide precisión. Rechaza
+entradas fuera de960×540, más de30fotogramas y valores/sumas no finitos.
+
+Doce pruebas de muestreo/conteo pasaron en CPU, bajo límites efectivos de
+High1,5GiB/Max2GiB/swap0,5GiB. Incluyen un estado sintético completo con prefijo
+`module.`, errores de claves/formas/tipos/NaN, hash, geometría, RGB, overflow de
+sumas, timestamps y preservación del original. Los estados sintéticos se usan
+únicamente en tests; no produjeron estimaciones sobre los videos aportados.
+El revisor independiente aprobó las correcciones y ambos adaptadores.
+
+La siguiente ejecución necesita el ZIP oficial o un checkpoint den compatible,
+con procedencia y hash. El autor aportó `~/home.agents/data/models.zip` y confirmó
+la finalización de su subida. Se conserva como entrada; la verificación del
+archivo y la inferencia se registran como el siguiente incremento.
+
+Una vez verificados sus pesos, el comando reproducible de la primera muestra
+es el siguiente (sustituir ruta y SHA-256 por los valores comprobados):
+
+```sh
+systemd-run --user --scope --collect --slice=nexo-projects.slice \
+  -p MemoryHigh=1610612736 -p MemoryMax=2147483648 \
+  -p MemorySwapMax=536870912 -p OOMPolicy=kill -- \
+  timeout --signal=TERM --kill-after=5s 120s \
+  bash ops/python-ml.sh scripts/count_video.py \
+  --input outputs/video-breve/20261024-validado/0265/entrada/input.json \
+  --checkpoint /ruta/comprobada/den_model_best.pth.tar \
+  --checkpoint-sha256 SHA256_COMPROBADO \
+  --checkpoint-source 'https://drive.google.com/file/d/1H-GrqyYxERLzVM5wQblUDeX24Ht2lD6q/view' \
+  --output-dir outputs/video-breve/20261024-validado/0265/inferencia \
+  --device cuda
+```
+
+Reconsultar preflight y ocupación GPU antes de lanzarlo; no ejecutarlo con pesos
+incompletos, aleatorios o procedencia desconocida. El comando no crea cuotas
+persistentes ni amplía los límites del pool compartido.
