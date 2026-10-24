@@ -94,3 +94,25 @@ autoriza montar, formatear ni usar un volumen de identidad dudosa.
 - Inventario de archivos conservados antes/después y espacio efectivamente
   liberado. Registrar diferencias, archivos retenidos y cualquier bloqueo.
 - Commits locales de propósito único y checkout limpio al cierre.
+
+## Evidencia de implementación
+
+- `scripts/audit_hdf5.py`: lector de solo lectura mediante la biblioteca HDF5
+  del sistema y comparación exhaustiva con reconstrucción desde MAT.
+- `scripts/regenerate_hdf5.py`: piloto de escritura exclusiva, destino vacío
+  separado del dataset y dentro del temporal autorizado; máximo 12 archivos.
+- Nueve pruebas del auditor/regenerador pasaron en CPU, sin instalaciones.
+- Piloto: 11 archivos nuevos de cinco secuencias (001, 011, 100, 107, 110),
+  81.942.016 bytes en total; todos los SHA-256 de arrays, tipos y formas
+  coinciden tras escribirlos y abrirlos de nuevo. Incluye un fotograma impar
+  sin imagen y secuencias con diferencias XML/MAT.
+- Revisión independiente: Codex `/root/revision_retencion_hdf5`, modelo exacto
+  no expuesto; inspección de código, cabeceras C locales y metadata exhaustiva.
+  Solicitó proteger destinos del regenerador contra enlaces; corrección revisada.
+- El complemento de metadata encontró un HDF5 con cabecera inválida:
+  `train_data/ground_truth/img091271_max.h5`. Se conserva. Los otros 50.244
+  carecen de comentarios de objetos y userblock. Este complemento no sustituye
+  la lectura/comparación de todos los valores, todavía en ejecución.
+- La revisión de XML/MAT encontró seis secuencias con un valor corregido en MAT:
+  004, 006, 007, 100, 107 y 110. Conservar los MAT es necesario; regenerar desde
+  XML podría perder esas correcciones.
