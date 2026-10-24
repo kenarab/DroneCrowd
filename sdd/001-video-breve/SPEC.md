@@ -142,11 +142,13 @@ rápidamente la ausencia de pesos; registrar esa alternativa como fase aparte.
 
 ## Decisión sobre el dataset
 
-~/data/DroneCrowd ocupa aproximadamente410GiB; unos404GiB son HDF5.
-Dos muestras contienen mapas generados; no hay comprobación exhaustiva que
-autorice borrar el conjunto. La inferencia adaptada de este video no necesita
-esos mapas. Mantener imágenes/anotaciones, código y resultados propios mientras
-se propone una lista de conservación, regeneración y retirada al autor.
+El 24/10/2026 se completó la [validación y retirada de mapas históricos](../002-retencion-hdf5/SPEC.md),
+autorizada por el autor como tarea separada. Se retiraron 50.239 HDF5 tras
+leer y comparar todos sus valores con su regeneración; se liberaron unos
+404 GiB. Se conservaron seis archivos incompletos/dañados, todas las imágenes,
+anotaciones, código y resultados propios. Los MAT de secuencia tienen copia
+adicional y un manifiesto permite regenerar mapas incluso después del borrado.
+La inferencia adaptada de este video no necesita esos mapas de entrenamiento.
 
 Ejecutar la prueba no borra datos. Una ejecución fallida tampoco demuestra que
 ningún modelo pueda servir. Entregar recomendación de seguir/ajustar/retirar,

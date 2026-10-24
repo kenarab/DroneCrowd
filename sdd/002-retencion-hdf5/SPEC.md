@@ -1,6 +1,6 @@
 # Validación, regeneración y retirada de mapas HDF5 históricos
 
-Fecha: 24/10/2026. Estado: en ejecución.
+Fecha: 24/10/2026. Estado: completada; seis excepciones conservadas.
 
 ## Encargo y autorización
 
@@ -111,8 +111,8 @@ autoriza montar, formatear ni usar un volumen de identidad dudosa.
   Solicitó proteger destinos del regenerador contra enlaces; corrección revisada.
 - El complemento de metadata encontró un HDF5 con cabecera inválida:
   `train_data/ground_truth/img091271_max.h5`. Se conserva. Los otros 50.244
-  carecen de comentarios de objetos y userblock. Este complemento no sustituye
-  la lectura/comparación de todos los valores, todavía en ejecución.
+  carecen de comentarios de objetos y userblock. Este complemento se cruzó
+  con la lectura/comparación de todos los valores descrita en Resultado final.
 - La revisión de XML/MAT encontró seis secuencias con una diferencia histórica
   de coordenadas: 004, 006, 007, 100, 107 y 110. No se determinó su origen.
   Conservar los MAT es necesario; regenerar desde XML podría producir mapas
@@ -124,8 +124,8 @@ autoriza montar, formatear ni usar un volumen de identidad dudosa.
   nuevo los hashes y los 34.585 archivos ajenos al borrado al terminar.
 - Diecinueve pruebas de auditor/regenerador/retirada pasaron en CPU. La retirada
   se probó exclusivamente con fixtures desechables. El mismo revisor aprobó
-  su implementación; la ejecución real depende todavía del resultado completo
-  y del manifiesto concreto. No se autoriza retirar el archivo con cabecera
+  su implementación; la ejecución real se condicionó al resultado completo
+  y al manifiesto concreto. No se autoriza retirar el archivo con cabecera
   inválida por la mera existencia de un generador.
 - El regenerador también admite `--reference-evidence`: verifica fuentes y
   reconstruye mapas que ya no existen, comparando contra los hashes conservados
@@ -150,3 +150,49 @@ Admite hasta 12 mapas por prueba, incluyendo `_max.h5`, sin escribir sobre los
 datos originales. Una regeneración masiva requiere otro preflight y presupuesto
 de almacenamiento: producir todo el conjunto denso ocuparía otra vez unos
 404 GiB. La muestra pequeña no requiere el SSD ofrecido.
+
+## Resultado final
+
+Se examinaron los 50.245 HDF5, en 2.328,5 segundos, con pico RSS de 155.312 KiB.
+Se leyeron íntegramente y reconstruyeron exactamente 50.239 archivos:
+16.800 de densidad y 33.439 de identidad/offsets. No hubo diferencias numéricas
+en los archivos completos. Se conservaron los siguientes seis archivos:
+
+| Nombre bajo `train_data/ground_truth` | Motivo |
+| --- | --- |
+| `img081167_max.h5` | Sólo contiene identity y offset1 |
+| `img089039_max.h5` | Sólo contiene identity y offset1 |
+| `img091271_max.h5` | Cabecera HDF5 inválida |
+| `img098137_max.h5` | Sólo contiene identity y offset1 |
+| `img107009_max.h5` | Sólo contiene identity y offset1 |
+| `img110243_max.h5` | Sólo contiene identity y offset1 |
+
+El mismo revisor comprobó independientemente el plan concreto antes de la
+retirada: 50.239 candidatos, 433.733.890.048 bytes asignados (403,946 GiB),
+manifiesto SHA-256
+`cc4aec7b9d886caa3a1d14090fe1689e326d0a1434a4703b4033e241fbf62455`.
+La ejecución retiró exactamente esos archivos en 12 segundos. El incremento
+observado de espacio libre fue 433.727.913.984 bytes; la pequeña diferencia
+puede incluir el diario y cambios de asignación del sistema de archivos.
+
+Las comprobaciones posteriores verificaron el inventario de los 34.585 archivos
+ajenos al borrado, los hashes de las fuentes y sus copias, y los hashes de los
+seis HDF5 retenidos (56.008.704 bytes asignados en total). Todos permanecieron
+inalterados respecto de sus registros previos.
+Se conservan los 112 MAT de secuencia y los generadores originales, con copia
+adicional en la evidencia privada. Los XML también permanecen en su lugar.
+
+Después del borrado se regeneraron a disco dos mapas ya ausentes —densidad de
+`img001002` y localización del fotograma impar `img011001`— desde las fuentes y
+el manifiesto. Sus hashes de arrays, formas y tipos coinciden con los originales.
+El SSD externo no fue necesario y no se montó ni modificó ningún volumen.
+
+Evidencia permanente, excluida de Git:
+`.private/hdf5-retencion-2026-10-24/`. Incluye manifiestos de ambas revisiones,
+fuentes/copias/hashes, inventario conservado, piloto, diario de retirada,
+excepciones y prueba de regeneración posterior. Los mapas de prueba permanecen
+en el temporal autorizado, no en los directorios originales.
+
+La prueba de video puede continuar sin estos mapas de entrenamiento. Todavía
+requiere checkpoint entrenado compatible y validación de su propia entrada;
+esta limpieza no mide conteos ni calidad sobre los videos de la marcha.

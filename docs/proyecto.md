@@ -10,7 +10,8 @@ ejecutor o proyecto OpenProject.
 Primero se conservaron por separado el renombre de requirements y los pines
 históricos del autor. Los dos wheels locales corresponden a CPython3.7 y
 CUDA10.1, son instaladores (no pesos del modelo) y permanecen fuera de Git.
-El enlace dataset apunta a los datos existentes, que permanecen intactos.
+El enlace dataset apunta a los datos existentes; se conservan las imágenes,
+anotaciones y resultados propios.
 
 El objetivo práctico es evaluar un video con pesos existentes. Entrenar aprende
 parámetros desde ejemplos anotados; inferir aplica pesos existentes a otro video.
@@ -25,3 +26,12 @@ Pedido vigente del autor: continuar desde este repo con videos que están subien
 a ~/home.agents/data/marchauniversitaria. [Traspaso operativo](traspaso-video-marcha-2026-10-24.md).
 La nueva sesión comprobará finalización de la subida, pesos y recursos antes de
 ejecutar la muestra; no se lanzó inferencia real desde Nexo.
+
+## Retención de mapas históricos
+
+El 24/10/2026 se verificaron y retiraron 50.239 HDF5 generados para entrenamiento,
+liberando unos 404 GiB. Se conservaron seis excepciones y todos los originales,
+anotaciones y resultados propios. La prueba de video no requiere esos mapas;
+para volver a entrenar habrá que regenerarlos. Hay copia de los MAT y un
+manifiesto privado con hashes, y se probó regenerar después del borrado.
+[Especificación, evidencia y procedimiento](../sdd/002-retencion-hdf5/SPEC.md).
