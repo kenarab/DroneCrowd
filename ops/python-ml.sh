@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-export TMPDIR=/home/alephbet/home.agents/tmp
+export TMPDIR=/home/alephbet/home.codex/tmp
 export TMP="$TMPDIR" TEMP="$TMPDIR"
 export npm_config_cache="$TMPDIR/npm-cache"
 export PIP_CACHE_DIR="$TMPDIR/pip-cache" UV_CACHE_DIR="$TMPDIR/uv-cache"

@@ -8,7 +8,7 @@ evaluar una prueba breve de conteo en otro video, conservando sus adaptaciones.
 Responsable científico: DroneCrowd. Nexo coordina recursos y retención; no incorpora
 el código del producto. Ver docs/proyecto.md y sdd/001-video-breve/SPEC.md.
 Traspaso vigente: docs/traspaso-video-marcha-2026-10-24.md. El autor abre la
-sesión nueva; videos en subida a ~/home.agents/data/marchauniversitaria.
+sesión nueva; videos aportados en ~/home.agents/data/marchaUniversitaria241002.
 
 - Trabajar en este repositorio; no modificar hermanos ni el venv compartido.
 - Usar palabras descriptivas para conceptos y pasos; evitar claves de letras.
