@@ -25,8 +25,12 @@ benchmark y no son todavía una interfaz de video independiente.
 Pedido vigente del autor: probar STNNet sobre los videos aportados en
 ~/home.agents/data/marchaUniversitaria241002. Se prepararon nueve fotogramas
 verificados y el adaptador de conteo, con pruebas y límites de memoria/tiempo.
-La inferencia entrenada sigue pendiente: el enlace oficial de pesos respondió
-cuota excedida en Drive. [Estado y reproducción](../sdd/001-video-breve/SPEC.md).
+El autor aportó los pesos tras la cuota excedida en Drive. La inferencia
+entrenada funcionó en nueve fotogramas; la configuración a 960×540 devolvió 20–82
+personas y resulta visualmente insuficiente para esa multitud. No usar estos
+valores como estimación de convocatoria.
+[Resultados](resultado-video-marcha-2026-10-24.md),
+[estado y reproducción](../sdd/001-video-breve/SPEC.md).
 
 ## Retención de mapas históricos
 

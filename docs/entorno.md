@@ -117,8 +117,10 @@ con Matplotlib/Pillow ya existentes en el Python base, con caché propia en el
 temporal autorizado; no se añadieron al venv ml.
 
 Se verificaron nueve fotogramas reales de los tres videos con hashes/PTS y
-límites kernel2GiB. Doce tests de los adaptadores pasaron en CPU. Esto se suma
+límites kernel de 2 GiB. Trece tests de los adaptadores pasaron en CPU. Esto se suma
 a las pruebas sintéticas del núcleo en CPU/GPU ya documentadas, sin repetir
-benchmarks. Falta comprobar la compatibilidad del checkpoint real: el enlace
-oficial de modelos respondió cuota excedida en Drive. No se ejecutó inferencia
-entrenada ni se midió calidad sobre la marcha.
+benchmarks. El autor aportó el ZIP tras la cuota excedida de Drive. La carga
+restringida del checkpoint real y nueve inferencias en GPU funcionaron con una
+excepción mínima para metadata NumPy antigua. Los conteos son visualmente
+insuficientes para la marcha; no se midió
+precisión cuantitativa. [Resultados y límites](resultado-video-marcha-2026-10-24.md).

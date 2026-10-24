@@ -282,8 +282,22 @@ de `archive/data.pkl`, sin ejecutar pickle, identificó `best_prec1` como escala
 float64 (`f8`). Sólo para el hash exacto anterior se permite temporalmente
 `numpy.core.multiarray.scalar`, `numpy.dtype` y `Float64DType`. La carga mantiene
 `weights_only=True`, ubicación CPU y validación estricta de los 41tensores.
-No se habilita deserialización arbitraria ni se recupera el optimizador.
+No se habilita deserialización arbitraria ni se reanuda entrenamiento.
 
 Nueve tests de conteo pasaron, incluyendo fixture con el alias NumPy histórico,
 rechazo de otros globals y restauración de la allowlist tras éxito/error.
 El intento fallido permanece como evidencia separada de las ejecuciones válidas.
+
+### Cierre de la primera prueba real
+
+Se completaron nueve inferencias, tres por video, en ejecuciones secuenciales con
+las cuotas anteriores. Salidas0265:20,0/28,9/62,0;0269:36,7/46,0/36,4;
+trim:82,4/62,9/67,3. No son estimaciones aceptables de convocatoria: la revisión
+visual de las nueve imágenes y mapas muestra multitud extensa sin respuesta y
+activaciones en edificios. No hay anotaciones para calcular precisión.
+
+Trece tests pasados en total; carga, mapas y conteos revisados independientemente.
+El núcleo y el adaptador funcionan con pesos reales, pero el criterio de utilidad
+no se cumple con esta configuración. Conservar evidencia y proponer un ensayo
+acotado con recortes nativos y referencias manuales, sin ampliar automáticamente
+la ejecución ni entrenar. [Informe, figuras y recursos](../../docs/resultado-video-marcha-2026-10-24.md).
