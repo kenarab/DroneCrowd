@@ -48,6 +48,10 @@ class VideoSampleTests(unittest.TestCase):
                 self.assertAlmostEqual(frame["pts_seconds"], target, places=5)
                 self.assertEqual(sha256(root / "sample" / frame["rgb_file"]), frame["rgb_sha256"])
                 self.assertTrue((root / "sample" / frame["preview_file"]).is_file())
+            native = sample(video, root / "native", width=32, fractions=(.5,), native=True)
+            self.assertEqual((native["frames"][0]["width"], native["frames"][0]["height"]), (64, 36))
+            self.assertEqual(native["frames"][0]["rgb_sha256"], report["frames"][1]["rgb_sha256"])
+            self.assertEqual(native["sampling_transform"], "native RGB decode, no resize")
             with self.assertRaises(ValueError):
                 sample(video, source_dir / "forbidden", width=64)
 

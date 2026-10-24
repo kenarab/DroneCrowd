@@ -49,7 +49,7 @@ def output_budget(width, height, frames):
     return planned
 
 
-def sample(video, output, width=960, fractions=(0.1, 0.5, 0.9), max_seconds=120):
+def sample(video, output, width=960, fractions=(0.1, 0.5, 0.9), max_seconds=120, native=False):
     if not 1 <= len(fractions) <= 30 or not all(math.isfinite(f) and 0 <= f < 1 for f in fractions):
         raise ValueError("Choose one to thirty fractions in [0, 1)")
     if not 0 < max_seconds <= 120:
@@ -82,7 +82,13 @@ def sample(video, output, width=960, fractions=(0.1, 0.5, 0.9), max_seconds=120)
     rotation = next((float(s["rotation"]) for s in stream.get("side_data_list", []) if "rotation" in s), 0)
     if round(rotation) % 180:
         native_width, native_height = native_height, native_width
-    target_width, target_height = geometry(native_width, native_height, width)
+    if native:
+        if not (32 <= native_width <= 3840 and 32 <= native_height <= 2160
+                and native_width % 4 == 0 and native_height % 4 == 0):
+            raise ValueError("Native sampling requires multiples of four up to 3840×2160")
+        target_width, target_height = native_width, native_height
+    else:
+        target_width, target_height = geometry(native_width, native_height, width)
     source_hash = sha256(video)
     output_budget(target_width, target_height, len(fractions))
     output.mkdir(parents=True, exist_ok=False)
@@ -93,7 +99,7 @@ def sample(video, output, width=960, fractions=(0.1, 0.5, 0.9), max_seconds=120)
             decoded = run([ffmpeg, "-hide_banner", "-loglevel", "info", "-threads", "1",
                            "-filter_threads", "1", "-copyts", "-ss", f"{requested:.9f}",
                            "-i", str(video), "-map", "0:v:0", "-an", "-sn",
-                           "-vf", f"scale={target_width}:{target_height},showinfo",
+                           "-vf", "showinfo" if native else f"scale={target_width}:{target_height},showinfo",
                            "-frames:v", "1", "-pix_fmt", "rgb24", "-f", "rawvideo", "pipe:1"])
             rgb = decoded.stdout
             if len(rgb) != target_width * target_height * 3:
@@ -107,8 +113,9 @@ def sample(video, output, width=960, fractions=(0.1, 0.5, 0.9), max_seconds=120)
             ppm = output / f"frame-{index:03d}.ppm"
             ppm.write_bytes(f"P6\n{target_width} {target_height}\n255\n".encode() + rgb)
             png = output / f"frame-{index:03d}.png"
+            preview = ["-vf", "scale=960:-1"] if native and target_width > 960 else []
             run([ffmpeg, "-hide_banner", "-loglevel", "error", "-threads", "1",
-                 "-i", str(ppm), "-frames:v", "1", "-threads", "1", "-n", str(png)])
+                 "-i", str(ppm), *preview, "-frames:v", "1", "-threads", "1", "-n", str(png)])
             records.append({"index": index, "requested_seconds": requested, "pts_seconds": pts,
                             "rgb_file": ppm.name, "preview_file": png.name,
                             "rgb_sha256": sha256(ppm), "width": target_width, "height": target_height})
@@ -120,6 +127,7 @@ def sample(video, output, width=960, fractions=(0.1, 0.5, 0.9), max_seconds=120)
                   "source_mtime_ns": before.st_mtime_ns, "metadata": metadata, "frames": records,
                   "sampling_seconds": time.monotonic() - started, "model_inference": False,
                   "ffmpeg": ffmpeg, "ffprobe": ffprobe, "script_sha256": sha256(__file__),
+                  "sampling_transform": "native RGB decode, no resize" if native else "FFmpeg scale",
                   "memory_limits": memory_limits()}
         (output / "input.json").write_text(json.dumps(report, indent=2) + "\n")
         return report
@@ -133,9 +141,10 @@ def main():
     parser.add_argument("--video", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--width", type=int, default=960)
+    parser.add_argument("--native", action="store_true", help="Decode without resizing, at most 3840×2160")
     parser.add_argument("--fractions", type=float, nargs="+", default=[0.1, 0.5, 0.9])
     args = parser.parse_args()
-    report = sample(args.video, args.output_dir, args.width, args.fractions)
+    report = sample(args.video, args.output_dir, args.width, args.fractions, native=args.native)
     print(json.dumps({"source": report["source"], "frames": len(report["frames"]),
                       "actual_timestamps": [f["pts_seconds"] for f in report["frames"]],
                       "model_inference": False, "manifest": str(args.output_dir / "input.json")}))

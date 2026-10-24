@@ -95,9 +95,9 @@ def load_density_checkpoint(path, expected_hash):
     return model.eval()
 
 
-def read_rgb(path, width, height):
-    if (type(width) is not int or type(height) is not int or not 32 <= width <= 960
-            or not 32 <= height <= 540 or width % 4 or height % 4):
+def read_rgb(path, width, height, *, max_width=960, max_height=540):
+    if (type(width) is not int or type(height) is not int or not 32 <= width <= max_width
+            or not 32 <= height <= max_height or width % 4 or height % 4):
         raise ValueError("RGB dimensions exceed the initial inference budget")
     with Path(path).open("rb") as handle:
         if handle.readline() != b"P6\n" or handle.readline() != f"{width} {height}\n".encode() or handle.readline() != b"255\n":
@@ -108,14 +108,14 @@ def read_rgb(path, width, height):
     return np.frombuffer(data, dtype=np.uint8).reshape(height, width, 3)
 
 
-def validate_frames(frames, directory):
-    if not isinstance(frames, list) or not 1 <= len(frames) <= 30:
+def validate_frames(frames, directory, *, max_width=960, max_height=540, max_frames=30):
+    if not isinstance(frames, list) or not 1 <= len(frames) <= max_frames:
         raise ValueError("Input must have one to thirty frames")
     indices = set()
     for frame in frames:
         width, height, index = frame["width"], frame["height"], frame["index"]
-        if (type(width) is not int or type(height) is not int or not 32 <= width <= 960
-                or not 32 <= height <= 540 or width % 4 or height % 4):
+        if (type(width) is not int or type(height) is not int or not 32 <= width <= max_width
+                or not 32 <= height <= max_height or width % 4 or height % 4):
             raise ValueError("RGB dimensions exceed the initial inference budget")
         if type(index) is not int or not 0 <= index < 30 or index in indices:
             raise ValueError("Frame indices must be distinct integers in [0, 30)")
