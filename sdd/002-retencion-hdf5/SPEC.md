@@ -113,6 +113,17 @@ autoriza montar, formatear ni usar un volumen de identidad dudosa.
   `train_data/ground_truth/img091271_max.h5`. Se conserva. Los otros 50.244
   carecen de comentarios de objetos y userblock. Este complemento no sustituye
   la lectura/comparación de todos los valores, todavía en ejecución.
-- La revisión de XML/MAT encontró seis secuencias con un valor corregido en MAT:
-  004, 006, 007, 100, 107 y 110. Conservar los MAT es necesario; regenerar desde
-  XML podría perder esas correcciones.
+- La revisión de XML/MAT encontró seis secuencias con una diferencia histórica
+  de coordenadas: 004, 006, 007, 100, 107 y 110. No se determinó su origen.
+  Conservar los MAT es necesario; regenerar desde XML podría producir mapas
+  distintos de los que esta auditoría logra reproducir desde los MAT vigentes.
+- `scripts/retire_verified_hdf5.py`: plan de solo lectura por defecto; ejecutar
+  exige cantidad y SHA-256 del manifiesto revisado. Cruza ambas auditorías,
+  comprueba fuentes y copias, y opera con `dir_fd`/`O_NOFOLLOW` sobre cada nombre
+  validado, con diario de operaciones y detención ante cambios. Comprueba de
+  nuevo los hashes y los 34.585 archivos ajenos al borrado al terminar.
+- Diecinueve pruebas de auditor/regenerador/retirada pasaron en CPU. La retirada
+  se probó exclusivamente con fixtures desechables. El mismo revisor aprobó
+  su implementación; la ejecución real depende todavía del resultado completo
+  y del manifiesto concreto. No se autoriza retirar el archivo con cabecera
+  inválida por la mera existencia de un generador.
