@@ -301,3 +301,6 @@ El núcleo y el adaptador funcionan con pesos reales, pero el criterio de utilid
 no se cumple con esta configuración. Conservar evidencia y proponer un ensayo
 acotado con recortes nativos y referencias manuales, sin ampliar automáticamente
 la ejecución ni entrenar. [Informe, figuras y recursos](../../docs/resultado-video-marcha-2026-10-24.md).
+
+Continuación solicitada por el autor: [ensayo de resolución nativa y Lanczos](../003-resolucion-original/SPEC.md),
+completado con siete configuraciones y evaluación visual separada.

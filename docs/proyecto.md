@@ -32,6 +32,11 @@ valores como estimación de convocatoria.
 [Resultados](resultado-video-marcha-2026-10-24.md),
 [estado y reproducción](../sdd/001-video-breve/SPEC.md).
 
+Continuación autorizada: prueba nativa 4K y Lanczos 2×/4×, siete configuraciones
+completas. Hay más respuesta con detalle nativo, pero los conteos siguen siendo
+visualmente insuficientes y no están validados como convocatoria.
+[Comparación de resolución](resultado-resolucion-original-2026-10-24.md).
+
 ## Retención de mapas históricos
 
 El 24/10/2026 se verificaron y retiraron 50.239 HDF5 generados para entrenamiento,

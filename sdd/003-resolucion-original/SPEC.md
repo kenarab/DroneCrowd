@@ -52,4 +52,10 @@ Temporales/cachés en `~/home.codex/tmp`; originales de videos y ZIP intactos.
 
 ## Estado
 
-Plan en ejecución. Resultados y criterio de utilidad pendientes.
+Ensayo completo: siete configuraciones, un fotograma por video, PTS y hashes de
+fuente verificados. 17 tests pasados y revisión independiente de implementación.
+Nativo 4K: 378,5 / 503,4; sus controles 960→4K: 135,4 / 87,0. MP4 nativo/2×/4×:
+61,6 / 84,7 / 128,5. El detalle nativo aumenta la respuesta; utilidad todavía
+insuficiente según inspección visual, sin precisión medida. Artefactos nuevos
+aproximadamente 95 MiB, cuotas y tiempo cumplidos.
+[Informe y reproducción](../../docs/resultado-resolucion-original-2026-10-24.md).
