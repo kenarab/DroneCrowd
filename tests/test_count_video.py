@@ -1,22 +1,50 @@
 """Numerical recipe and restricted-checkpoint guards; no real-video inference."""
 import os
+import pickle
+import io
 from pathlib import Path
 import sys
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 
 import numpy as np
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from count_video import STNNet, count_from_maps, load_density_checkpoint, normalized_rgb, quadrants, read_rgb, validate_frames
+from count_video import STNNet, count_from_maps, load_density_checkpoint, normalized_rgb, quadrants, read_rgb, restricted_checkpoint, validate_frames
 from sample_video import sha256
 
 torch.set_num_threads(1)
 
 
 class VideoCountingTests(unittest.TestCase):
+    def test_legacy_numpy_metadata_is_hash_scoped_and_other_globals_stay_rejected(self):
+        with tempfile.TemporaryDirectory(prefix="dronecrowd-numpy-metadata-", dir=os.environ["TMPDIR"]) as directory:
+            path = Path(directory) / "metadata.pt"
+            buffer = io.BytesIO()
+            torch.save({"best_prec1": np.float64(16.8835)}, buffer, pickle_protocol=2)
+            # Reproduce the old module spelling observed in the actual pickle.
+            with zipfile.ZipFile(buffer) as source, zipfile.ZipFile(path, "w") as target:
+                for entry in source.infolist():
+                    data = source.read(entry)
+                    if entry.filename.endswith("data.pkl"):
+                        data = data.replace(b"numpy._core.multiarray\n", b"numpy.core.multiarray\n")
+                    target.writestr(entry, data)
+            digest = sha256(path)
+            before = torch.serialization.get_safe_globals().copy()
+            with self.assertRaises(pickle.UnpicklingError):
+                restricted_checkpoint(path, digest)
+            with patch("count_video.NUMPY_METADATA_CHECKPOINTS", {digest}):
+                self.assertEqual(restricted_checkpoint(path, digest)["best_prec1"], np.float64(16.8835))
+            self.assertEqual(torch.serialization.get_safe_globals(), before)
+            torch.save({"unrelated": Path("untrusted-path")}, path)
+            with patch("count_video.NUMPY_METADATA_CHECKPOINTS", {sha256(path)}):
+                with self.assertRaises(pickle.UnpicklingError):
+                    restricted_checkpoint(path, sha256(path))
+            self.assertEqual(torch.serialization.get_safe_globals(), before)
+
     def test_rgb_channel_order_and_imagenet_normalization(self):
         rgb = np.array([[[255, 0, 0]]], dtype=np.uint8)
         actual = normalized_rgb(rgb)

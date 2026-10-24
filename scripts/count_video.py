@@ -22,6 +22,20 @@ from stnmodel import STNNet
 from sample_video import memory_limits, sha256
 
 
+# Inspected archive/data.pkl: best_prec1 is a NumPy float64 scalar. Only this
+# exact author-supplied checkpoint needs the historical NumPy module alias.
+NUMPY_METADATA_CHECKPOINTS = {"be407d2dcdee6775a342c343523cd17399310d91acb548172d8f7000606d501d"}
+
+
+def restricted_checkpoint(path, digest):
+    if digest not in NUMPY_METADATA_CHECKPOINTS:
+        return torch.load(path, map_location="cpu", weights_only=True)
+    allowed = [(np._core.multiarray.scalar, "numpy.core.multiarray.scalar"),
+               np.dtype, type(np.dtype(np.float64))]
+    with torch.serialization.safe_globals(allowed):
+        return torch.load(path, map_location="cpu", weights_only=True)
+
+
 def normalized_rgb(rgb):
     if rgb.dtype != np.uint8 or rgb.ndim != 3 or rgb.shape[2] != 3:
         raise ValueError("Expected RGB uint8 H×W×3")
@@ -59,7 +73,7 @@ def load_density_checkpoint(path, expected_hash):
         raise ValueError("Checkpoint missing or exceeds 512 MiB")
     if len(expected_hash) != 64 or sha256(path) != expected_hash.lower():
         raise ValueError("Checkpoint SHA-256 mismatch")
-    checkpoint = torch.load(path, map_location="cpu", weights_only=True)
+    checkpoint = restricted_checkpoint(path, expected_hash.lower())
     if not isinstance(checkpoint, dict) or not isinstance(checkpoint.get("state_dict"), dict):
         raise ValueError("Expected a complete checkpoint with state_dict")
     state = {}

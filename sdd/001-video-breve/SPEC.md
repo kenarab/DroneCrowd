@@ -266,3 +266,24 @@ systemd-run --user --scope --collect --slice=nexo-projects.slice \
 Reconsultar preflight y ocupación GPU antes de lanzarlo; no ejecutarlo con pesos
 incompletos, aleatorios o procedencia desconocida. El comando no crea cuotas
 persistentes ni amplía los límites del pool compartido.
+
+### Compatibilidad del checkpoint aportado
+
+El ZIP aportado por el autor pasó CRC de todas sus entradas. SHA-256:
+`2caa2483e1ea237b7cacf86df7ed7cbb30edb36c4b650ee74d8f643ae9f205c0`.
+Se extrajo únicamente `models/den_model_best.pth.tar` (120201670bytes), SHA-256
+`be407d2dcdee6775a342c343523cd17399310d91acb548172d8f7000606d501d`.
+El original se conserva sin modificar; copia de ejecución ignorada por Git en
+`STNNet/models/den_model_best.pth.tar`, procedencia en
+`outputs/video-breve/20261024-pesos.json`.
+
+La primera carga restringida rechazó metadata NumPy antigua. Inspección estática
+de `archive/data.pkl`, sin ejecutar pickle, identificó `best_prec1` como escalar
+float64 (`f8`). Sólo para el hash exacto anterior se permite temporalmente
+`numpy.core.multiarray.scalar`, `numpy.dtype` y `Float64DType`. La carga mantiene
+`weights_only=True`, ubicación CPU y validación estricta de los 41tensores.
+No se habilita deserialización arbitraria ni se recupera el optimizador.
+
+Nueve tests de conteo pasaron, incluyendo fixture con el alias NumPy histórico,
+rechazo de otros globals y restauración de la allowlist tras éxito/error.
+El intento fallido permanece como evidencia separada de las ejecuciones válidas.
