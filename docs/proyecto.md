@@ -20,3 +20,8 @@ benchmark y no son todavía una interfaz de video independiente.
 
 [Plan y criterio de cierre](../sdd/001-video-breve/SPEC.md).
 [Entorno y diagnóstico](entorno.md).
+
+Pedido vigente del autor: continuar desde este repo con videos que están subiendo
+a ~/home.agents/data/marchauniversitaria. [Traspaso operativo](traspaso-video-marcha-2026-10-24.md).
+La nueva sesión comprobará finalización de la subida, pesos y recursos antes de
+ejecutar la muestra; no se lanzó inferencia real desde Nexo.

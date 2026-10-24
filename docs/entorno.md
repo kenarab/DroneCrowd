@@ -93,3 +93,11 @@ Revisión independiente del incremento de modelo: Codex /root/revision_archivos,
 modelo efectivo desconocido; sin bloqueantes. Conserva firma previa, capas y
 claves del state_dict y el valor predeterminado de inicialización. Revisión
 estática; no ejecutó GPU ni certificó pesos o calidad.
+
+## Entrada de video aportada por el autor
+
+El autor informa una subida a ~/home.agents/data/marchauniversitaria y pide
+continuar en una nueva sesión del fork. Reemplaza la búsqueda de copias antiguas
+como siguiente paso. Al preparar el traspaso la ruta aún no existía; confirmar
+finalización y verificar archivos. Pesos/adaptador e inferencia real siguen
+pendientes. [SPEC vigente](../sdd/001-video-breve/SPEC.md).
