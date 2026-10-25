@@ -76,5 +76,9 @@ ejecutar el trabajo afectado.
 
 ## Estado
 
-Selección histórica y controles visuales en preparación; GPU aún sin ejecutar
-en esta fase.
+Control histórico completo: 30 imágenes anotadas, den1 MAE 20,30 con cuatro crops
+y 19,45 con mosaico; revisión independiente de fuentes, 60 mapas y métricas.
+[Informe](../../docs/calibracion-historica-2026-10-25.md). Ocho ROIs v2 congelados
+tras revisión visual, dos trabajos de densidad 1×/2× completos. La comparación
+del checkpoint de localización está en ejecución; no se modifican referencias
+después de observar las predicciones.
