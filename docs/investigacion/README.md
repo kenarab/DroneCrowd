@@ -1,5 +1,7 @@
 # Investigación y selección de modelos
 
+[Nota sobre upscaling, escala y personas dispersas](resolucion-y-densidad.md).
+
 Consulta inicial:25/10/2026. Hay alternativas posteriores a STNNet que merecen
 comparación. Ninguna está validada todavía para nuestros videos de Buenos Aires.
 Esta selección es dirigida, no una revisión sistemática ni un ranking universal.
