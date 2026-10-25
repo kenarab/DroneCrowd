@@ -1,5 +1,19 @@
 # DroneCrowd: recuperación del experimento
 
+## Investigación vigente
+
+El alcance se amplía a investigación reproducible sobre medición de multitudes
+en manifestaciones argentinas, inicialmente Buenos Aires. Se compararán métodos
+recientes con STNNet bajo protocolos explícitos y revisión independiente. Ningún
+modelo está validado todavía como estimador de la asistencia total a una marcha.
+
+- [Marco SDD y criterios de reproducibilidad](../sdd/000-investigacion-reproducible/SPEC.md).
+- [Bibliografía y selección de candidatos](investigacion/README.md).
+- [Revisión conjunta de los ajustes rechazados](revision-conjunta-entrenamiento-2026-10-25.md).
+- [Cómo mirar y corregir las anotaciones provisionales](revision-visual-anotaciones-2026-10-25.md).
+
+## Recuperación y primeras pruebas
+
 El autor autoriza el 24/10/2026 trabajar y commitear en su fork personal
 git@github.com:kenarab/DroneCrowd.git, trasladado al sandbox. El upstream es
 https://github.com/VisDrone/DroneCrowd. Este proyecto conserva el código científico,
