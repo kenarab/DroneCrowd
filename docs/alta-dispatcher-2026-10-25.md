@@ -1,4 +1,22 @@
-# Alta preparada para el dispatcher GPU
+# Alta del dispatcher GPU: estado vigente y propuesta histórica
+
+## Estado vigente al cierre del 25/10/2026
+
+Infraestructura activó el dispatcher y su interfaz ahora consulta también el
+registro de recursos. Reconoce al proyecto con ID exacto **`DroneCrowd`**, sin
+promoverlo al registro principal. **No aplicar el paquete histórico de promoción
+a `dronecrowd` ni retirar la entrada de recursos**: ese procedimiento corresponde
+a la integración anterior y ya no es necesario. El generador y los paquetes de
+SPEC015 se conservan como evidencia histórica, no como alta vigente ejecutable.
+
+La prueba científica de 69 trabajos ya terminó por la ruta directa de SPEC016;
+no se transforma retrospectivamente en una ejecución de la cola. Para la campaña
+nueva se prepararán perfiles específicos con el propietario `DroneCrowd`, revisión
+y ejecutor nuevos. Ver [plan de videos completos](plan-videos-completos-2026-10-25.md)
+y [SPEC017](../sdd/017-videos-completos/SPEC.md). Esta actualización sólo documenta
+el contrato comprobado; no modifica configuración ni envía solicitudes.
+
+## Propuesta histórica de SPEC015 (no aplicar)
 
 25/10/2026. El autor pidió preparar el alta. El proyecto entrega una propuesta
 completa para registrar **DroneCrowd y tres perfiles iniciales**. No se aplicó al
@@ -8,7 +26,7 @@ la admisión real siguen siendo responsabilidad de infraestructura.
 Actualización posterior: los69 trabajos del plan ya se completaron por la ruta
 directa autorizada de [SPEC016](../sdd/016-prueba-directa-acotada/SPEC.md), con
 [resultados verificados](resultado-validacion-extendida-2026-10-25.md). El registro
-compartido sigue pendiente. La entrega actualizada se genera en
+compartido seguía pendiente en ese momento. La entrega histórica se generó en
 `outputs/alta-dispatcher-20261025-actualizada/`, fijada al commit que publica este
 cierre. El paquete anterior848e5ee y sus recibos se conservan como evidencia.
 
@@ -23,9 +41,11 @@ La primera tanda sólo prueba el circuito con los mismos dos cuadros4K del inici
 de video0265: SR, CLIP-EBC RN50 y MPCount. Presupuesto: tres intentos totales,
 máximo120s cada uno. Sin reentrenamiento ni reintentos automáticos.
 
-## Paquete local para infraestructura
+### Paquete local histórico para infraestructura (no aplicar)
 
-Después del commit, generar desde la raíz del proyecto:
+El procedimiento anterior generaba el paquete desde la raíz del proyecto con el
+comando siguiente. Se conserva como referencia histórica; no ejecutarlo como alta
+actual ni aplicar sus fragmentos de registro/promoción:
 
 ```sh
 export TMPDIR=/home/alephbet/home.codex/tmp
@@ -77,7 +97,7 @@ Máximo32 solicitudes pendientes por proyecto: los69 trabajos no se envían junt
 `waiting_profile` sólo acredita recepción; `running` y un resultado verificable
 son evidencias diferentes. Esta preparación no produjo recibos de envío.
 
-## Entorno y recursos
+### Entorno y recursos de SPEC015 (histórico)
 
 Entorno privado `.venv/gpu-candidates`, Python3.13.13; hereda Torch2.14.1 y
 NumPy2.5.4 del entorno ML compartido mediante `.pth`, sin modificarlo. Se añadieron
@@ -105,7 +125,7 @@ Un timeout puede dejar estado inicial/parcial: no interpretarlo como completo.
 Los errores previos al lanzamiento también conservan un recibo local único en
 `outputs/dispatcher-validation-failures/`, porque el coordinador descarta stderr.
 
-## Comprobaciones y límites
+### Comprobaciones y límites de SPEC015 (histórico)
 
 Pasaron11 pruebas CPU del wrapper,7 del contador y9 del preparador. Este último
 usa el Python CPU con Pillow; el entorno de inferencia no necesita ese paquete.

@@ -17,6 +17,7 @@ modelo está validado todavía como estimador de la asistencia total a una march
 - [Validación extendida preparada para el dispatcher GPU](validacion-extendida-en-cola-2026-10-25.md).
 - [Alta de DroneCrowd y perfiles de prueba para la cola](alta-dispatcher-2026-10-25.md).
 - [Resultado extendido:69 trabajos GPU y44 instantes de tres videos](resultado-validacion-extendida-2026-10-25.md).
+- [Plan para todos los cuadros: tiempos, recursos y cola para los tres modelos](plan-videos-completos-2026-10-25.md).
 
 ## Recuperación y primeras pruebas
 
