@@ -14,6 +14,8 @@ modelo está validado todavía como estimador de la asistencia total a una march
 - [Modelo original sobre las ocho fotos completas](inferencia-fotos-completas-2026-10-25.md).
 - [Primera prueba SR, tamaños de pesos y tiempos de video](prueba-sr-2026-10-25.md).
 - [SR, CLIP-EBC y MPCount sobre los mismos tres cuadros 4K](comparacion-tres-modelos-video-2026-10-25.md).
+- [Validación extendida preparada para el dispatcher GPU](validacion-extendida-en-cola-2026-10-25.md).
+- [Alta de DroneCrowd y perfiles de prueba para la cola](alta-dispatcher-2026-10-25.md).
 
 ## Recuperación y primeras pruebas
 
