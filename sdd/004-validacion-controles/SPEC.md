@@ -80,5 +80,10 @@ Control histórico completo: 30 imágenes anotadas, den1 MAE 20,30 con cuatro cr
 y 19,45 con mosaico; revisión independiente de fuentes, 60 mapas y métricas.
 [Informe](../../docs/calibracion-historica-2026-10-25.md). Ocho ROIs v2 congelados
 tras revisión visual, dos trabajos de densidad 1×/2× completos. La comparación
-del checkpoint de localización está en ejecución; no se modifican referencias
-después de observar las predicciones.
+del checkpoint de localización está completa: piloto histórico de seis escenas y
+16 comparaciones ROI. Mejor respuesta en algunos peatones, falsa masa en fachada
+persiste (33,85 / 42,10). No se modificaron referencias después de observar
+predicciones. [Informe de controles](../../docs/controles-marcha-2026-10-25.md).
+El nuevo pedido del autor prioriza preparar un piloto de ajuste con anotaciones
+y datos originales; la investigación de DM-Count queda como alternativa sin
+descarga ni ejecución en esta fase.
