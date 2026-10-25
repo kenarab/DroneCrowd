@@ -1,6 +1,7 @@
 # Investigación y selección de modelos
 
 [Nota sobre upscaling, escala y personas dispersas](resolucion-y-densidad.md).
+[Primera prueba ejecutada de SR y tiempos de video](../prueba-sr-2026-10-25.md).
 
 Consulta inicial:25/10/2026. Hay alternativas posteriores a STNNet que merecen
 comparación. Ninguna está validada todavía para nuestros videos de Buenos Aires.
@@ -12,7 +13,7 @@ determina el resultado.
 
 | Trabajo | Tarea y motivo para estudiarlo | Disponibilidad comprobada | Estado local |
 | --- | --- | --- | --- |
-| [SR, CVPR2026](https://github.com/wbshu/SR) | Conteo por cuadro en video; incluye DroneCrowd y regularización temporal durante entrenamiento | Código MIT; release v1 enumera `dronecrowd.tar` | Primera auditoría propuesta; sin descarga ni ejecución |
+| [SR, CVPR2026](https://github.com/wbshu/SR) | Conteo por cuadro en video; incluye DroneCrowd y regularización temporal durante entrenamiento | Código MIT; release v1 `dronecrowd.tar`, hash comprobado | Ejecutado: ocho controles y tres cuadros nativos; calidad local sin validar |
 | [CLIP-EBC, ICME2025](https://arxiv.org/abs/2403.09281) | Conteo supervisado de multitudes por clasificación de bloques y densidad; otra familia de representación | [Código MIT y pesos/logs](https://github.com/Yiming-M/CLIP-EBC); repo archivado22/10/2026 | Segunda auditoría propuesta; variante por fijar |
 | [MPCount, CVPR2024](https://openaccess.thecvf.com/content/CVPR2024/html/Peng_Single_Domain_Generalization_for_Crowd_Counting_CVPR_2024_paper.html) | Transferencia entre dominios y ambigüedad entre personas y fondo | [Código Apache-2.0 y enlaces a pesos](https://github.com/Shimmer93/MPCount) | Alternativa si la evaluación prioriza cambio de dominio |
 | [MovingDroneCrowd, ICCV2025](https://github.com/fyw1999/MovingDroneCrowd) | Individuos únicos a través del video, con cámara móvil | Enlaces de pesos; ficha CC-BY-NC-4.0; SDNet disponible reentrenado | Otra tarea: requiere especificación y evaluación temporal |
@@ -24,9 +25,10 @@ y DCA-MoE, además de los anteriores. Las métricas de papers con datasets o tar
 distintos no se comparan directamente con nuestra MAE histórica20,30.
 
 Para SR se comprobó el [listado oficial de assets v1](https://github.com/wbshu/SR/releases/expanded_assets/v1):
-`dronecrowd.tar`,82,1MB, SHA-256 publicado
+`dronecrowd.tar`, 86,1 MB (82,1 MiB), SHA-256 publicado
 `22ff7ff7bfcfa6cb45b38ea0df6dd74f388acc070b41bbb2d64a7308062097eb`.
-Es metadata de la release: no se recalculó aún el hash ni se inspeccionó el binario.
+El hash ya se recalculó y el binario se cargó de forma restringida: 118 tensores,
+metadata `epoch=10`; arquitectura con 21.510.465 parámetros. Ver prueba enlazada.
 La licencia del código no se extiende automáticamente a pesos o datasets.
 
 ## Orden de trabajo
@@ -54,8 +56,8 @@ las anotaciones son necesarias para medir error. Las propuestas automáticas
 ayudan a revisar y no se convierten por sí solas en referencia verdadera.
 
 No se eligió aún una arquitectura híbrida, no se descargaron datasets nuevos y
-no se necesita regenerar todos los HDF5. El siguiente experimento de un modelo
-nuevo tendrá su propia SPEC; este documento no lo ejecuta automáticamente.
+no se necesita regenerar todos los HDF5. La primera prueba SR tiene SPEC012 y
+resultados propios; los demás candidatos siguen pendientes de ejecución.
 
 ## Reproducibilidad y revisión
 
