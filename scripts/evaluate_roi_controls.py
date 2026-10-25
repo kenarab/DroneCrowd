@@ -37,6 +37,7 @@ def main():
     parser.add_argument("--controls",type=Path,required=True)
     parser.add_argument("--controls-sha256",required=True)
     parser.add_argument("--scale",type=int,choices=[1,2],required=True)
+    parser.add_argument("--variant",choices=["density","localization"],default="density")
     parser.add_argument("--checkpoint",type=Path,required=True)
     parser.add_argument("--checkpoint-sha256",required=True)
     parser.add_argument("--output-dir",type=Path,required=True)
@@ -65,7 +66,8 @@ def main():
     if path.is_relative_to(output) or any(output.is_relative_to(Path(e["source_image"]).parent) for e in entries):
         parser.error("Output overlaps source/control inputs")
     output.mkdir(parents=True,exist_ok=False)
-    report={"status":"started","controls":str(path),"controls_sha256":args.controls_sha256,"scale":args.scale,
+    report={"status":"started","variant":args.variant,"controls":str(path),"controls_sha256":args.controls_sha256,"scale":args.scale,
+            "prediction_head":"den1 density; localization peaks not decoded",
             "transform":"identity" if args.scale==1 else "FFmpeg Lanczos 2x", "rows":[],
             "checkpoint":str(args.checkpoint.resolve()),"checkpoint_sha256":args.checkpoint_sha256,
             "script_sha256":sha256(__file__),"loader_sha256":sha256(Path(__file__).with_name("count_video.py")),
@@ -77,7 +79,8 @@ def main():
     try:
         if not torch.cuda.is_available():
             raise ValueError("CUDA required")
-        model=load_density_checkpoint(args.checkpoint,args.checkpoint_sha256).to("cuda")
+        model=load_density_checkpoint(args.checkpoint,args.checkpoint_sha256,use_loc=args.variant=="localization").to("cuda")
+        report["loaded_state_tensors"]=len(model.state_dict())
         torch.cuda.reset_peak_memory_stats()
         with torch.inference_mode():
             for entry in entries:

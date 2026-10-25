@@ -41,6 +41,7 @@ def main():
     parser.add_argument("--cohort-sha256", required=True)
     parser.add_argument("--indices", nargs="+", type=int, required=True)
     parser.add_argument("--mode", choices=["quadrants", "tiles"], required=True)
+    parser.add_argument("--variant", choices=["density", "localization"], default="density")
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--checkpoint-sha256", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -63,7 +64,8 @@ def main():
     if output.is_relative_to(Path(cohort["dataset"])) or cohort_path.is_relative_to(output):
         parser.error("Output must be separate from original dataset and RGB inputs")
     output.mkdir(parents=True, exist_ok=False)
-    report = {"status": "started", "mode": args.mode, "cohort": str(cohort_path),
+    report = {"status": "started", "mode": args.mode, "variant":args.variant, "cohort": str(cohort_path),
+              "prediction_head":"den1 primary; density heads separate; localization peaks not decoded",
               "cohort_sha256": args.cohort_sha256, "indices": args.indices,
               "checkpoint": str(args.checkpoint.resolve()), "checkpoint_sha256": args.checkpoint_sha256,
               "script_sha256": sha256(__file__), "loader_sha256": sha256(Path(__file__).with_name("count_video.py")),
@@ -74,7 +76,8 @@ def main():
     try:
         if not torch.cuda.is_available():
             raise ValueError("CUDA required")
-        model = load_density_checkpoint(args.checkpoint, args.checkpoint_sha256).to("cuda")
+        model = load_density_checkpoint(args.checkpoint, args.checkpoint_sha256, use_loc=args.variant=="localization").to("cuda")
+        report["loaded_state_tensors"]=len(model.state_dict())
         torch.cuda.reset_peak_memory_stats()
         with torch.inference_mode():
             for entry in entries:

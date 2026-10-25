@@ -20,6 +20,20 @@ torch.set_num_threads(1)
 
 
 class VideoCountingTests(unittest.TestCase):
+    def test_localization_checkpoint_requires_explicit_matching_architecture(self):
+        state=STNNet(use_loc=True,pretrained_backbone=False).state_dict()
+        with tempfile.TemporaryDirectory(prefix="dronecrowd-loc-checkpoint-",dir=os.environ["TMPDIR"]) as directory:
+            path=Path(directory)/"mock-localization.pt"
+            path.write_bytes(b"mock-localization-fixture")
+            with patch("count_video.torch.load",return_value={"state_dict":state}):
+                with self.assertRaisesRegex(ValueError,"keys differ"):
+                    load_density_checkpoint(path,sha256(path))
+                model=load_density_checkpoint(path,sha256(path),use_loc=True)
+            self.assertTrue(model.loc)
+            self.assertFalse(model.trk)
+            for name,tensor in model.state_dict().items():
+                self.assertTrue(torch.equal(tensor,state[name]))
+
     def test_legacy_numpy_metadata_is_hash_scoped_and_other_globals_stay_rejected(self):
         with tempfile.TemporaryDirectory(prefix="dronecrowd-numpy-metadata-", dir=os.environ["TMPDIR"]) as directory:
             path = Path(directory) / "metadata.pt"

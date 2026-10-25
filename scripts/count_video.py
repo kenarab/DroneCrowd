@@ -22,9 +22,12 @@ from stnmodel import STNNet
 from sample_video import memory_limits, sha256
 
 
-# Inspected archive/data.pkl: best_prec1 is a NumPy float64 scalar. Only this
-# exact author-supplied checkpoint needs the historical NumPy module alias.
-NUMPY_METADATA_CHECKPOINTS = {"be407d2dcdee6775a342c343523cd17399310d91acb548172d8f7000606d501d"}
+# Inspected archive/data.pkl: best_prec1 is a NumPy float64 scalar. Only these
+# exact author-supplied checkpoints need the historical NumPy module alias.
+NUMPY_METADATA_CHECKPOINTS = {
+    "be407d2dcdee6775a342c343523cd17399310d91acb548172d8f7000606d501d",
+    "88168a85079b4931b86ea1145d501ad5e73d3d27e903fedf4c049d62514a8d5d",
+}
 
 
 def restricted_checkpoint(path, digest):
@@ -67,7 +70,7 @@ def count_from_maps(maps):
     return sum(max(0.0, value) for value in sums) / 100.0, sums
 
 
-def load_density_checkpoint(path, expected_hash):
+def load_density_checkpoint(path, expected_hash, *, use_loc=False):
     path = Path(path)
     if not path.is_file() or not 0 < path.stat().st_size <= 512 * 2**20:
         raise ValueError("Checkpoint missing or exceeds 512 MiB")
@@ -84,7 +87,7 @@ def load_density_checkpoint(path, expected_hash):
         if normalized in state:
             raise ValueError("Checkpoint prefix normalization collision")
         state[normalized] = value
-    model = STNNet(use_loc=False, use_trk=False, pretrained_backbone=False)
+    model = STNNet(use_loc=use_loc, use_trk=False, pretrained_backbone=False)
     wanted = model.state_dict()
     if set(state) != set(wanted):
         raise ValueError(f"Density checkpoint keys differ: missing={sorted(set(wanted)-set(state))}; extra={sorted(set(state)-set(wanted))}")

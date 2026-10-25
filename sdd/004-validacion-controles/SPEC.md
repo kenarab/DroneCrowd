@@ -42,6 +42,15 @@ invocar nuevos servicios/LLM. Inferencia secuencial en RTX 3060, lote 1.
 5. Sólo si es útil, evaluar la variante local de localización del ZIP existente,
    tras inspección estática/carga restringida y validación estricta de sus pesos.
    No usar variantes de tracking ni introducir dependencias de CUDA compiladas.
+   Activación de esta rama: el modelo den cuenta aproximadamente los controles
+   históricos y peatones claros, pero asigna masa alta a una fachada y apenas
+   responde a las regiones densas. Comparación fijada: mismo piloto histórico
+   de seis escenas y los ocho ROIs congelados a 1×/2×. `loc_model_best.pth.tar`
+   contiene metadata float64 antigua inspeccionada estáticamente: mismos globals
+   del modelo den, sin permitir nuevas clases, excepción sólo para su SHA-256
+   `88168a85079b4931b86ea1145d501ad5e73d3d27e903fedf4c049d62514a8d5d`.
+   Carga explícita `use_loc=True`, tracking desactivado, estado completo estricto;
+   comparar su cabeza de densidad sin sumar cabezas ni descartar parámetros.
 
 ## Anotaciones, recursos y aceptación
 
