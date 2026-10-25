@@ -79,8 +79,10 @@ relacionadas, sin independencia fuerte respecto del mismo acto.
 ## Recursos y entrega
 
 Disco local verificado: 410 GiB libres; SSD externo no necesario. Preflight Nexo
-antes de nuevas cargas: temporal 1 GiB, retención estimada 0,5 GiB, RAM 1,25 GiB
-con margen y reservas 20 GiB disco / 2 GiB RAM. Mantener scope High 1,5 GiB,
+antes de nuevas cargas: temporal 1 GiB, retención estimada 0,5 GiB, RAM inicial
+1,25 GiB. El smoke midió 1,68 GiB RSS; actualizar la estimación a 1,75 GiB antes
+del piloto mixto, sin ampliar cuotas. Margen y reservas 20 GiB disco / 2 GiB RAM
+disponible. Mantener scope High 1,5 GiB,
 Max 2 GiB, swap 0,5 GiB; GPU RTX3060 secuencial, sin cambios a drivers/venv.
 No ampliar cuotas si falla: reducir el experimento y registrar el fallo.
 Temporales/cachés en `~/home.codex/tmp`, salidas persistentes privadas en
@@ -94,8 +96,36 @@ en el venv compartido. DM-Count queda como alternativa investigada, no ejecutada
 
 ## Estado
 
-Preparación y ampliación de referencias en curso. Ningún ajuste de pesos ejecutado
-todavía; el checkpoint original sigue siendo la única versión usada hasta aquí.
+Preparadas siete regiones: cuatro de entrenamiento (dos de puntos parciales y
+dos negativos), tres reservadas. Se excluyen los positivos densos irresolubles
+de video y el grupo ambiguo de la fuente. Anotaciones congeladas privadas:
+`outputs/ajuste-dominio/anotaciones-v2.json`, SHA-256
+`b7b37952b31d2efd3c3c3e6079587be88096f9b5c368bc56c46ccd2e0f6cfa1b`.
+HTML offline y siete MAT en `outputs/ajuste-dominio/revision-v2/`.
+El recuento nominal de puntos no equivale a masa o centros supervisados: bordes
+y zonas dudosas se excluyen y se registran en cada paso.
+
+Replay: ocho secuencias equidistantes entre las 82 de entrenamiento, una imagen
+midpoint disponible y dos recortes nativos 512×512 por imagen. Particiones
+disjuntas comprobadas. Preparador implementado por Codex GPT-6 Luna, selección
+corregida por revisión del coordinador y revisada independientemente por el agente
+existente. Sin HDF5 ni escrituras en el dataset.
+
+Smoke GPU original-only de cinco pasos completo: cambia únicamente weight/bias
+de den1 (129 parámetros); tres controles originales con masa positiva mantienen
+conteos positivos. CUDA pico 246.253.056 bytes, RSS 1.765.348 KiB, 2,72 s internos.
+Las pérdidas no se interpretan como precisión. Código ejecutado preservado con
+el hash del informe en `outputs/ajuste-dominio/executed-code/`.
+El detector de colapso excluye blancos negativos y exige tres recortes originales
+con masa >=1; falla si todos sus conteos clamped son cero. Es un guardia interno,
+separado del control histórico de retención de 30 imágenes.
+Tres pruebas CPU del entrenador verifican actualización real, congelados,
+contexto fuera del ROI y detección de colapso sin confundir negativos.
+Ningún piloto mixto ejecutado todavía. Original y smoke se conservan separados.
+Revisor independiente existente aprobó preparador, referencias y entrenador;
+herramienta Codex, modelo no identificado. Preflight actualizado a 1,75 GiB
+admitido sin cambios de cuotas. El HTML exportado pasa comprobación de sintaxis
+JavaScript; todavía no se hizo una prueba interactiva en navegador.
 
 Implementados `domain_targets.py`, `domain_annotations.py` y el revisor HTML
 offline. Nueve pruebas: seis de masa/máscaras/gradientes (venv ML, CPU) y tres
