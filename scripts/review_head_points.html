@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión local de cabezas · DroneCrowd</title>
+<style>
+body{font:16px system-ui;background:#16212c;color:#eaf0f5;margin:24px}button,select,input{font:inherit;margin:5px;padding:7px}button{cursor:pointer}main{display:grid;grid-template-columns:320px 1fr;gap:20px}aside{max-width:320px}#viewport{overflow:auto;max-height:75vh;background:#080d12}canvas{display:block;image-rendering:pixelated;cursor:crosshair}small{display:block;line-height:1.5;color:#becbd5}#status{color:#ffd68a}pre{white-space:pre-wrap;font-size:12px}a{color:#9ed5ff}@media(max-width:800px){main{display:block}}
+</style>
+<h1>Revisar puntos de cabezas</h1>
+<p>Marcas provisionales de agentes. Verde: cabeza confirmada visualmente. Naranja: dudosa. Las regiones parciales no describen todas las personas.</p>
+<main><aside>
+<label>Región <select id="regions"></select></label>
+<label>Zoom <input id="zoom" type="range" min="1" max="6" step="0.5" value="3"></label>
+<label>Acción <select id="mode"><option value="confirmed">Agregar confirmada</option><option value="uncertain">Agregar dudosa</option><option value="delete">Quitar punto cercano</option></select></label>
+<p><label><input id="overlay" type="checkbox" checked>Mostrar marcas</label></p>
+<p><button id="review">Confirmar revisión de esta región</button></p>
+<p id="status"></p><pre id="details"></pre>
+<button id="export">Guardar JSON revisado</button>
+<small>Todo funciona en este archivo, sin conexión ni servidor. El JSON conserva coordenadas originales del recorte, fuente y división train/test. Una edición invalida la revisión previa. Para exportar MAT, volver a ejecutar domain_annotations.py con el JSON y su nuevo hash. Los MAT no deben reemplazar los originales del dataset.</small>
+</aside><div id="viewport"><canvas id="canvas"></canvas></div></main>
+<script>
+const bundle=/*ANNOTATION_DATA*/null;
+const data=bundle.annotations, select=document.getElementById('regions'), canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d'), zoom=document.getElementById('zoom'), mode=document.getElementById('mode');
+let selected=0, bitmap=null, generation=0;
+data.entries.forEach((e,i)=>{const o=document.createElement('option');o.value=i;o.textContent=e.name;select.appendChild(o)});
+function entry(){return data.entries[selected]}
+function draw(){if(!bitmap)return;const e=entry(),s=Number(zoom.value);canvas.width=bitmap.width*s;canvas.height=bitmap.height*s;ctx.imageSmoothingEnabled=false;ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+if(document.getElementById('overlay').checked){for(const [field,color] of [['points_confirmed_xy','#4aff88'],['points_uncertain_xy','#ffb347']])e[field].forEach(([x,y],i)=>{ctx.beginPath();ctx.arc(x*s,y*s,4*s,0,Math.PI*2);ctx.strokeStyle=color;ctx.lineWidth=1.2;ctx.stroke();ctx.fillStyle=color;ctx.font='12px system-ui';ctx.fillText(String(i+1),x*s+5,y*s-4)})}
+document.getElementById('status').textContent=`${e.points_confirmed_xy.length} confirmadas · ${e.points_uncertain_xy.length} dudosas · ${e.review_status}`;
+document.getElementById('details').textContent=JSON.stringify({fuente:e.source_image,hash:e.source_sha256,grupo:e.source_group,division:e.split,supervision:e.supervision,recorte:e.box_xyxy},null,2)}
+function load(){const token=++generation,img=new Image();bitmap=null;img.onload=()=>{if(token===generation){bitmap=img;draw()}};img.src='data:image/png;base64,'+bundle.images[entry().name]}
+select.onchange=()=>{selected=Number(select.value);load()};zoom.oninput=draw;document.getElementById('overlay').onchange=draw;
+canvas.onclick=event=>{if(!bitmap)return;const e=entry(),r=canvas.getBoundingClientRect(),x=(event.clientX-r.left)*bitmap.width/r.width,y=(event.clientY-r.top)*bitmap.height/r.height;
+if(mode.value==='delete'){let best=null,distance=10*bitmap.width/r.width;for(const field of ['points_confirmed_xy','points_uncertain_xy'])e[field].forEach(([px,py],i)=>{const d=Math.hypot(px-x,py-y);if(d<distance){distance=d;best=[field,i]}});if(!best)return;e[best[0]].splice(best[1],1)}
+else {if(e.supervision==='negative'){alert('Esta región está marcada como negativa. Cambiá su política en el JSON antes de agregar personas.');return}const field=mode.value==='confirmed'?'points_confirmed_xy':'points_uncertain_xy';e[field].push([Math.round(x*10)/10,Math.round(y*10)/10])}
+e.review_status='agent_provisional';delete e.reviewed_at;delete e.reference_interval;data.review='Edited offline; pending validation and updated manifest hash';draw()};
+document.getElementById('review').onclick=()=>{entry().review_status='user_reviewed';entry().reviewed_at=new Date().toISOString();draw()};
+document.getElementById('export').onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='anotaciones-revisadas.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+load();
+</script></html>

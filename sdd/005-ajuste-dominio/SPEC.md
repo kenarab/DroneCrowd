@@ -28,8 +28,13 @@ pueden aportar puntos positivos parciales, nunca ceros para personas sin marcar.
    subida, telemetría ni dependencias de red.
 2. Generar blancos nuevos por puntos con Gaussianas normalizadas, suma una
    persona por punto, válidos incluso para 0,1,2,3 puntos y colisiones. Para
-   etiquetas parciales, supervisar sólo vecindades confiables y enmascarar el
-   resto; dudosos no se usan como personas confirmadas ni como fondo.
+   etiquetas parciales, supervisar sólo vecindades confiables con pérdida
+   unilateral `mean(relu(target*100-prediction)**2)`: nunca penaliza masa
+   adicional de personas sin marcar. No usar MSE bilateral para puntos parciales.
+   Dudosos se ignoran en un radio mínimo de cuatro sigmas; no se usan como
+   personas confirmadas ni como fondo. Sigma nuevo: dos píxeles del mapa a
+   stride2; radio ignorado mínimo ocho píxeles de mapa / 16 píxeles de entrada.
+   Excluir también 32 píxeles de borde del ROI para blancos exhaustivos pequeños.
 3. Replay sólo de `train_data` original: subconjunto fijo de secuencias separado
    de test/val, MAT y RGB con hashes. Generar la densidad histórica auditada por
    imagen en memoria y recortar, con caché RAM pequeña; no recrear HDF5 masivos.
@@ -52,6 +57,10 @@ Adam nuevo con LR inicial 1e-5 y gradiente limitado a norma 1. Mezcla fija de un
 ejemplo nuevo por cada tres ejemplos originales. Máximo 200 pasos por piloto,
 timeout externo de 120 s por trabajo; ningún barrido automático de hiperparámetros.
 Documentar las diferencias respecto del entrenamiento original.
+129 parámetros entrenables en la primera opción; 147.713 en conv4 más den1.
+Cada pérdida se normaliza por los píxeles supervisados válidos de ese ejemplo;
+el mismo peso por ejemplo/fuente hace explícita la mezcla 1:3. Informar pérdidas
+y pasos por origen, sin confundir número de muestras con área supervisada.
 
 Objetivos: reducir la respuesta en fondos reservados y mejorar señales sobre
 personas conservando el control original. Evaluar primero la cohorte histórica
@@ -60,6 +69,12 @@ cohorte test histórica no se usa en gradientes ni para construir blancos.
 Las métricas sobre referencias nuevas de agentes son exploratorias; registrar
 por separado las métricas contra anotaciones originales humanas del dataset.
 No seleccionar un resultado sólo porque aumentó el total de personas predicho.
+Criterio de retención fijado: MAE del control histórico repetido de 30 imágenes
+no debe superar 1,20× el baseline den1 de 20,3018173 (24,3621808 personas).
+Detener ante pérdidas/gradientes no finitos, cambios de parámetros congelados o
+colapso a conteos cero. Esa cohorte ya fue observada y sirve de control repetido,
+no de evaluación final ciega. Las fuentes nuevas reservadas son escenas
+relacionadas, sin independencia fuerte respecto del mismo acto.
 
 ## Recursos y entrega
 
@@ -81,3 +96,12 @@ en el venv compartido. DM-Count queda como alternativa investigada, no ejecutada
 
 Preparación y ampliación de referencias en curso. Ningún ajuste de pesos ejecutado
 todavía; el checkpoint original sigue siendo la única versión usada hasta aquí.
+
+Implementados `domain_targets.py`, `domain_annotations.py` y el revisor HTML
+offline. Nueve pruebas: seis de masa/máscaras/gradientes (venv ML, CPU) y tres
+de MAT/particiones (Python base). Revisión independiente del contrato científico:
+agente existente `revision_retencion_hdf5`; formato/MAT/HTML: Codex GPT-6 Luna
+con contexto acotado, autorizado por el autor para reducir coste. Se corrigió
+su observación sobre el radio de borrado al cambiar zoom. Los puntos visuales
+propuestos por Luna requieren segunda revisión; no se aceptan por el solo hecho
+de pasar la validación de formato.
