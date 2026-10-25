@@ -5,6 +5,18 @@ completa para registrar **DroneCrowd y tres perfiles iniciales**. No se aplicó 
 registro compartido ni se enviaron solicitudes. La activación del coordinador y
 la admisión real siguen siendo responsabilidad de infraestructura.
 
+Actualización posterior: los69 trabajos del plan ya se completaron por la ruta
+directa autorizada de [SPEC016](../sdd/016-prueba-directa-acotada/SPEC.md), con
+[resultados verificados](resultado-validacion-extendida-2026-10-25.md). El registro
+compartido sigue pendiente. La entrega actualizada se genera en
+`outputs/alta-dispatcher-20261025-actualizada/`, fijada al commit que publica este
+cierre. El paquete anterior848e5ee y sus recibos se conservan como evidencia.
+
+Los tres perfiles iniciales apuntan ahora a resultados completos: el wrapper
+los verificará y omitirá la inferencia. Esto sirve para comprobar el circuito de
+solicitud/estado; no demuestra una nueva ejecución CUDA por el dispatcher. Para
+esa comprobación posterior hacen falta entradas nuevas y su perfil revisado.
+
 [SPEC015](../sdd/015-alta-dispatcher/SPEC.md) define esta entrega. La evaluación
 completa tiene [44 cuadros y69 trabajos preparados](validacion-extendida-en-cola-2026-10-25.md).
 La primera tanda sólo prueba el circuito con los mismos dos cuadros4K del inicio
@@ -18,11 +30,12 @@ Después del commit, generar desde la raíz del proyecto:
 ```sh
 export TMPDIR=/home/alephbet/home.codex/tmp
 export TMP="$TMPDIR" TEMP="$TMPDIR" PYTHONDONTWRITEBYTECODE=1
-.venv/gpu-candidates/bin/python scripts/prepare_gpu_registration.py
+.venv/gpu-candidates/bin/python scripts/prepare_gpu_registration.py \
+  --output-dir outputs/alta-dispatcher-20261025-actualizada
 ```
 
 El comando sólo valida en CPU y escribe
-`outputs/alta-dispatcher-20261025/`. Requiere checkout rastreado limpio y verifica
+`outputs/alta-dispatcher-20261025-actualizada/`. Requiere checkout rastreado limpio y verifica
 que el entrypoint y lock estén en el commit. No sobrescribe un paquete existente.
 
 | Archivo | Aplicación prevista por infraestructura |
@@ -33,6 +46,12 @@ que el entrypoint y lock estén en el commit. No sobrescribe un paquete existent
 | `requests.json` | Proyecto, perfil e ID idempotente para tres futuras solicitudes |
 | `handoff.json` | Revisión exacta, plan congelado, presupuestos y estado preparado/no aplicado |
 | `sha256.json` | Integridad de los cinco archivos anteriores |
+
+El recibo adicional `execution-state.json` de esta actualización documenta los69
+resultados directos verificados y que no quedan trabajos científicos por ejecutar
+del plan. El campo `remaining_prepared_jobs=66` de `handoff.json` conserva la
+estructura original de la propuesta fuera de los tres perfiles iniciales; no
+representa66 inferencias pendientes después de esta prueba.
 
 El ID del proyecto es `dronecrowd`; la raíz registrada es `DroneCrowd`. Los
 perfiles son `dronecrowd-smoke-sr-v1`, `dronecrowd-smoke-clip-ebc-v1` y
