@@ -1,0 +1,6 @@
+{
+  "id": "dronecrowd",
+  "label": "DroneCrowd · investigación y anotaciones",
+  "repository": "DroneCrowd",
+  "roots": ["docs", "sdd", "revision"]
+}

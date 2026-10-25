@@ -13,6 +13,7 @@
 __pycache__/
 *.py[cod]
 /outputs/
+/revision/
 /runs/
 /STNNet/models/
 /STANet/models/
