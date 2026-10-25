@@ -108,7 +108,7 @@ def read_rgb(path, width, height, *, max_width=960, max_height=540):
     return np.frombuffer(data, dtype=np.uint8).reshape(height, width, 3)
 
 
-def validate_frames(frames, directory, *, max_width=960, max_height=540, max_frames=30):
+def validate_frames(frames, directory, *, max_width=960, max_height=540, max_frames=30, require_timestamps=True):
     if not isinstance(frames, list) or not 1 <= len(frames) <= max_frames:
         raise ValueError("Input must have one to thirty frames")
     indices = set()
@@ -120,7 +120,7 @@ def validate_frames(frames, directory, *, max_width=960, max_height=540, max_fra
         if type(index) is not int or not 0 <= index < 30 or index in indices:
             raise ValueError("Frame indices must be distinct integers in [0, 30)")
         indices.add(index)
-        if type(frame["pts_seconds"]) not in (float, int) or not math.isfinite(frame["pts_seconds"]):
+        if require_timestamps and (type(frame["pts_seconds"]) not in (float, int) or not math.isfinite(frame["pts_seconds"])):
             raise ValueError("Invalid frame timestamp")
         if not re.fullmatch(r"frame-\d{3}\.ppm", frame["rgb_file"]):
             raise ValueError("Unsafe RGB basename")
