@@ -1,0 +1,16 @@
+{
+  "repository": "Yiming-M/CLIP-EBC",
+  "commit": "b52a5944bd75beed34fd3d0da516aa833ae63354",
+  "files": {
+    "models/utils.py": "28aaa37a1b02168a920375504deb6bebc6fe42cfc7e530c7088d2cf11c6bb0ef",
+    "models/clip/model.py": "89522c08d3d1a7fdffd4c2d8a045917e8a07e4db760f171003efdcab73b8e2fc",
+    "models/clip/utils.py": "bb49b6e56ea923380aa6cd2ec88fe3e7a74014478312d389c490f3fb9dffc27f",
+    "models/clip/_clip/blocks.py": "dbcd8ef4c9d3f50073d508cf42bea2da1934a927491f2afcf6f37be00985c5d3",
+    "models/clip/_clip/image_encoder.py": "0b3a47192abe3201a4972a32ff39c41e56fd5369e6555bfa6e33597f951cf32a",
+    "models/clip/_clip/text_encoder.py": "0ecc29ee8d9929dc6db5741cb15e845d7beaedc0ed5176535c817a1ca7538fb1",
+    "models/clip/_clip/simple_tokenizer.py": "84b8d7260d9db1b4414b6d63b54129ee1e136a98a15ff360d26dbedabc9a862f",
+    "models/clip/_clip/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+    "configs/reduction_8.json": "9fda2a8e37a389cfef602dc9ad8b0ce8c30cd87a6b98e1707a0e0abc6803e8dc",
+    "LICENSE": "1cc2cbed92878a593134ad9583d314cada9b5e5afe4832422f0206623e1c9d42"
+  }
+}
