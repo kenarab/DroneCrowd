@@ -89,3 +89,12 @@ La consulta de servicios y código accesibles no encontró un dispatcher GPU
 operativo ni una CLI/API de envío. Hay diseño documental; no se acredita ausencia
 en otras ubicaciones. Se solicitó al autor la interfaz si está instalándose en
 otro lugar. No se enviaron trabajos ni se inició una campaña por este documento.
+
+## Cierre de preparación
+
+El autor confirmó que el dispatcher aún está en implementación. Preparados en CPU
+44 RGB y 23 lotes, con69 descriptores materializados, sin errores; PTS máximo a
+0,016s del solicitado. Estados explícitos: preparado/no enviado, perfil propuesto
+sin registro. Código snapshot5471334, hashes y argumentos verificados; no se ejecutó
+GPU ni se enviaron tareas. Pasaron9pruebas del preparador y7del contador, con revisión
+independiente antes de materializar. [Entrega e integración pendiente](../../docs/validacion-extendida-en-cola-2026-10-25.md).
