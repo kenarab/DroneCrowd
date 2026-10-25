@@ -121,11 +121,24 @@ con masa >=1; falla si todos sus conteos clamped son cero. Es un guardia interno
 separado del control histórico de retención de 30 imágenes.
 Tres pruebas CPU del entrenador verifican actualización real, congelados,
 contexto fuera del ROI y detección de colapso sin confundir negativos.
-Ningún piloto mixto ejecutado todavía. Original y smoke se conservan separados.
+Dos pilotos mixtos completos, ambos de 200 pasos desde el original (150 replay,
+50 nuevos). Head129 y conv4+head147713 cambian sólo los tensores permitidos.
+MAE histórico posterior35,02254 y112,87392, ambos mayores que24,36218 permitido;
+también aumentan las respuestas en los tres controles reservados de la marcha.
+Ambos se rechazan. No ejecutar más barridos con estas etiquetas/pérdidas.
+Original y checkpoints exploratorios se conservan separados.
 Revisor independiente existente aprobó preparador, referencias y entrenador;
 herramienta Codex, modelo no identificado. Preflight actualizado a 1,75 GiB
 admitido sin cambios de cuotas. El HTML exportado pasa comprobación de sintaxis
 JavaScript; todavía no se hizo una prueba interactiva en navegador.
+
+Entrega y límites en `docs/piloto-ajuste-dominio-2026-10-25.md`; evidencias privadas
+en `outputs/ajuste-dominio/` (~262MiB, límite512MiB). Las doce pruebas nuevas pasan.
+SSD externo no requerido y ningún HDF5 masivo reconstruido.
+Revisión independiente final aprobó conclusiones, código de informe y figuras:
+herramienta Codex, modelo no identificado. Verificados 18 hashes de fuentes del
+informe, 16 archivos originales usados por replay y el checkpoint den original
+intacto. Piloto completado; ninguna mejora de precisión en marcha demostrada.
 
 Implementados `domain_targets.py`, `domain_annotations.py` y el revisor HTML
 offline. Nueve pruebas: seis de masa/máscaras/gradientes (venv ML, CPU) y tres
