@@ -1,5 +1,13 @@
 # Anotaciones y primer piloto de ajuste
 
+Auditoría posterior,25/10: [Astra y Fable revisaron y discutieron el diseño](revision-conjunta-entrenamiento-2026-10-25.md).
+Faltó un control largo con datos originales solos y cambiaron varios factores
+simultáneamente. Los smoke/tests verificaron ejecución, sin validar la receta.
+El rechazo de pesos se mantiene; la atribución causal y la evaluación de la idea
+de adaptación quedan abiertas. Antes de más anotaciones/ajustes corresponde
+comprobar la receta base. Las medias por tipo siguientes no son curvas por ROI;
+los `first/last` agregados pueden corresponder a ejemplos distintos.
+
 Los dos ajustes exploratorios empeoraron los controles. Se conservan como
 experimentos rechazados; el checkpoint original continúa como referencia.
 Este resultado no demuestra que ajustar el modelo sea imposible: muestra que

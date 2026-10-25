@@ -140,6 +140,12 @@ herramienta Codex, modelo no identificado. Verificados 18 hashes de fuentes del
 informe, 16 archivos originales usados por replay y el checkpoint den original
 intacto. Piloto completado; ninguna mejora de precisión en marcha demostrada.
 
+Auditoría posterior solicitada por el autor (SPEC006): Astra y Fable coinciden
+en que el diseño quedó insuficientemente controlado. La aprobación de ejecución
+previa no acredita validez de la receta; falta control original-only150/200 y
+diagnóstico de objetivos/gradientes. Se conserva el rechazo de ambos pesos, sin
+inferir inviabilidad de la adaptación. Ver `docs/revision-conjunta-entrenamiento-2026-10-25.md`.
+
 Implementados `domain_targets.py`, `domain_annotations.py` y el revisor HTML
 offline. Nueve pruebas: seis de masa/máscaras/gradientes (venv ML, CPU) y tres
 de MAT/particiones (Python base). Revisión independiente del contrato científico:

@@ -51,4 +51,16 @@ delta de bias y pesos por carga restringida CPU, diferencias por imagen históri
 y estadísticas espaciales de mapas ya guardados. Ninguna carga GPU ni entrenamiento.
 Estos hechos se registran en el suplemento de ronda2 y se entregan a ambos para
 corregir hipótesis o afirmaciones excesivas de sus dictámenes independientes.
-La discusión está en curso; todavía falta el intercambio final de objeciones.
+Completadas tres rondas por modelo: independencia, objeciones y réplica final.
+Fable confirmó `is_error=false` y `claude-fable-5-1` en las tres respuestas;
+Astra conservó sus tres dictámenes en archivos separados. Las últimas réplicas
+fueron simultáneas; el acta distingue rectificaciones explícitas de desacuerdos
+anteriores. Astra revisó la fidelidad del acta final y la aprobó sin bloqueantes.
+
+Entrega: `docs/revision-conjunta-entrenamiento-2026-10-25.md`, expediente completo,
+seis dictámenes y suplemento medido. Se corrige el alcance del informe del piloto:
+instrumentación comprobada no valida el diseño; los dos pesos siguen rechazados,
+sin concluir inviabilidad de adaptar el modelo. Se propone diagnóstico común de
+gradientes/blancos y control original-only150, con criterios previos;200 es otro
+emparejamiento. Ninguno se ejecutó durante esta revisión. Pesos, etiquetas,
+entrenador y particiones permanecen intactos.
