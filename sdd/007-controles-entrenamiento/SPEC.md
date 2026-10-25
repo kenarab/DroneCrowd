@@ -22,8 +22,36 @@ parciales positivos y 24 negativos. Estos agregados describen gradientes en el
 punto inicial; no predicen directamente los pasos de Adam.
 
 La comparación espacial de kernels se limita a anotaciones originales
-completas. Si el alcance o tiempo no permite verificarla, se registra como
-pendiente; las etiquetas parciales nuevas no sirven para inferir masa completa.
+completas; las etiquetas parciales nuevas no sirven para inferir masa completa.
+El diagnóstico CPU descrito abajo fue revisado y ejecutado sobre ocho fuentes
+y dieciséis recortes; véase el estado y sus límites al final.
+
+Antes de más entrenamiento se comparan CPU y sin predictores ocho fuentes
+originales completas, una por `source_group`, y sus dieciséis recortes del
+replay. En ambos mapas se usa la misma rejilla booleana de ocupación y las
+coordenadas históricas truncadas `int(point/2)`. La única variable del kernel
+es el sigma: histórico adaptativo `0.1 * suma de distancias a los tres vecinos
+más cercanos` frente a sigma fijo 2. Se conserva el soporte `round(4*sigma)`,
+la normalización discreta de cada kernel antes de recortarlo al frame y los
+bordes históricos sin renormalizar masa perdida. El mapa adaptativo se compara
+con la reconstrucción histórica. Se informan colisiones de puntos que ocupan
+la misma celda, sigma, pico aislado, masa, pico, entropía y coseno espacial por
+frame y crop. Antes de comparar kernels, cada uno de los ocho mapas adaptativos
+debe coincidir bit a bit (`numpy.array_equal`) con
+`scripts/audit_hdf5.py:reconstruct_density`; el reporte guarda el SHA-256 del
+oráculo utilizado. El campo `raw_points_inside_box` cuenta filas MAT crudas en
+el recorte, incluidas colisiones en la misma celda; no es un conteo de celdas
+ocupadas. Es una comparación de implementación espacial; no mide calidad,
+precisión ni comportamiento del modelo y no selecciona variantes.
+
+`scripts/diagnose_target_kernels.py` recibe el replay y su SHA-256 y escribe un
+`report.json` nuevo. Sólo usa SciPy/NumPy/Pillow y MAT v5 vía SciPy; no carga
+PyTorch, HDF5 ni etiquetas nuevas. Valida los hashes de imagen y MAT, y que
+`full_points_xy` del replay coincida exactamente con `image_info.location[:, :2]`
+y el campo `number`. Cada frame conserva sus dos recortes originales. Las
+métricas muestran sumas retenidas tras el clipping, picos, entropía de masa
+normalizada y cosenos espaciales; no renormalizan bordes ni convierten puntos
+parciales en mapas completos.
 
 ## Criterios previos de interpretación
 
@@ -46,9 +74,23 @@ decisión definida antes de consultar resultados de test.
 
 ## Revisión previa
 
-Implementación: agente `gpt-6-luna`. Un revisor independiente con Codex (modelo
-no identificado) detectó un contrato Path/dict incorrecto en el diagnóstico; se
-corrigió y se añadió una prueba CPU que recorre lectura PPM, backward y clipping.
-También se fijó el hash original y la preservación de valores del gate antes de
-rechazar. Revisión final sin bloqueantes antes de ejecutar GPU. Cuatro pruebas
-del control y tres del entrenador aprobadas. Ejecución y resultados pendientes.
+Implementación inicial: agente `gpt-6-luna`. Un revisor independiente con Codex
+(modelo no identificado) detectó un contrato Path/dict en el diagnóstico de
+gradientes; se corrigió y se añadió una prueba CPU de lectura PPM/backward.
+También se fijó el hash original y la preservación del gate antes de rechazar.
+La comparación de kernels añade pruebas CPU para bordes sin renormalización,
+colisiones de coordenadas truncadas, cambio de sigma y equivalencia bit a bit
+con el oráculo. El SHA-256 revisado de `scripts/audit_hdf5.py` es
+`51c5b80cb82480957c0b1b02a4572f3ea0f1d6a4bdc7e55581ceb7add7831241`.
+Revisión independiente final aprobada, con cuatro pruebas de kernels y cuatro
+del postprocesado automático comprobadas por el revisor.
+
+## Estado de ejecución
+
+Completados gradientes iniciales sin actualizar el estado, control original-only150,
+retención histórica final y comparación CPU de ocho fuentes/16recortes. MAE20,2872
+frente a20,3018 original: conserva el control, sin mejora demostrada. Razón de suma
+train16=0,98779, sólo dos tensores de la cabeza cambiaron. Los ocho mapas adaptativos
+coincidieron bit a bit con el auditor; no se escribieron HDF5. Resultados, hashes y
+recursos en [informe de controles](../../docs/controles-ajuste-dominio-2026-10-25.md).
+No se ejecutaron original-only200, adaptación conv4 adicional ni ajuste con v3/v4.
