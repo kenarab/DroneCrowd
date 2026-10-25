@@ -26,9 +26,19 @@ invocar nuevos servicios/LLM. Inferencia secuencial en RTX 3060, lote 1.
    personas visibles donde sea defendible, con casos dudosos separados.
    La anotación visual del asistente es provisional, no un GT humano validado;
    no presentarla como precisión certificada. Si no pueden contarse, declararlo.
+   Inspección inicial: los recortes densos del video son borrosos para referencias
+   exhaustivas. Las fotos JPG ya aportadas contienen peatones más distinguibles;
+   se permite añadir controles positivos/negativos de esas fotos, identificados
+   por separado y sin asumir que equivalen al mismo instante de los videos.
 4. Medir sensibilidad a resolución/contexto y falsas respuestas con un número
    acotado de comparaciones derivadas de los controles. Elegir el siguiente paso
    según evidencia; no expandir automáticamente a videos completos.
+   Primera comparación de ROI fijada: ocho controles (cinco de video, tres de
+   foto), contexto exterior de 128 píxeles, escala nativa y Lanczos 2× en dos
+   trabajos. Integrar cada ROI sobre su mapa con coordenadas alineadas, sin
+   multiplicadores de área en el conteo. Los intervalos son de candidatos
+   visuales provisionales; la masa de Gaussianas puede cruzar sus bordes y
+   ninguna diferencia pequeña certifica un error de conteo de centros.
 5. Sólo si es útil, evaluar la variante local de localización del ZIP existente,
    tras inspección estática/carga restringida y validación estricta de sus pesos.
    No usar variantes de tracking ni introducir dependencias de CUDA compiladas.
