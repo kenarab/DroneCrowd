@@ -1,9 +1,13 @@
 """Compare frozen crowd counters on identical native frames with bounded streaming."""
 import argparse
 import json
+import math
+import os
 from pathlib import Path
 import resource
+import re
 import time
+import tempfile
 
 import numpy as np
 import torch
@@ -17,6 +21,46 @@ FROZEN_CHECKPOINTS = {
     "clip-ebc": "da40b664a0a5a57bc33235e7334403e5000271e0741134e301ea706d754bf7df",
     "mpcount": "4a0ba849ace0ef2bc87364ec8551de4a3e9dca74fad27764c9b948ebf7928eb0",
 }
+
+
+def validated_inputs(path, expected_hash):
+    if path.stat().st_size > 256 * 1024:
+        raise ValueError("Manifest too large")
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_hash) or sha256(path) != expected_hash:
+        raise ValueError("Input manifest hash mismatch")
+    manifest = json.loads(path.read_text())
+    frames = manifest["frames"]
+    if not isinstance(frames, list) or not 1 <= len(frames) <= 3:
+        raise ValueError("This process allows one to three frames")
+    indices = set()
+    for frame in frames:
+        if (type(frame["width"]) is not int or type(frame["height"]) is not int
+                or not 224 <= frame["width"] <= 3840 or not 224 <= frame["height"] <= 2160
+                or frame["width"] % 16 or frame["height"] % 16
+                or not re.fullmatch(r"frame-\d{3}\.ppm", frame["rgb_file"])
+                or not re.fullmatch(r"[0-9a-f]{64}", frame["rgb_sha256"])
+                or type(frame["index"]) is not int or frame["index"] in indices
+                or type(frame["pts_seconds"]) not in (int, float) or not math.isfinite(frame["pts_seconds"])):
+            raise ValueError("Invalid bounded frame geometry or identity")
+        indices.add(frame["index"])
+    return manifest
+
+
+def write_report_atomic(path, report):
+    """Keep staging in the authorized temporary, preserving the last valid report."""
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", prefix="dronecrowd-report-", suffix=".json",
+                                         dir=os.environ["TMPDIR"], delete=False) as handle:
+            temporary = Path(handle.name)
+            json.dump(report, handle, indent=2, allow_nan=False)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def clip_windows(width, height):
@@ -74,6 +118,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", choices=["sr", "clip-ebc", "mpcount"], required=True)
     parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument("--expected-input-sha256", default=FROZEN_INPUT_SHA256)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--checkpoint-sha256", required=True)
     parser.add_argument("--clip-source", type=Path)
@@ -82,18 +127,10 @@ def main():
     started = time.monotonic()
     deadline = started + 115
     torch.set_num_threads(1)
-    if args.input.stat().st_size > 256 * 1024:
-        raise ValueError("Manifest too large")
-    if sha256(args.input) != FROZEN_INPUT_SHA256 or args.checkpoint_sha256 != FROZEN_CHECKPOINTS[args.model]:
-        raise ValueError("This experiment requires the frozen input and model checkpoint hashes")
-    manifest = json.loads(args.input.read_text())
+    if args.checkpoint_sha256 != FROZEN_CHECKPOINTS[args.model]:
+        raise ValueError("This experiment requires the frozen model checkpoint hashes")
+    manifest = validated_inputs(args.input, args.expected_input_sha256)
     frames = manifest["frames"]
-    if not 1 <= len(frames) <= 3:
-        raise ValueError("This experiment allows one to three frames")
-    for frame in frames:
-        if (frame["width"] != 3840 or frame["height"] != 2160
-                or Path(frame["rgb_file"]).name != frame["rgb_file"]):
-            raise ValueError("Experiment requires frozen native 3840 by 2160 inputs")
     output = args.output_dir.resolve()
     if args.input.resolve().is_relative_to(output):
         raise ValueError("Output must be separate from inputs")
@@ -104,6 +141,11 @@ def main():
               "device": "cuda", "torch_version": str(torch.__version__), "numpy_version": np.__version__,
               "interpretation": "Same native images; model-specific contexts. No GT, accuracy or attendance claim. Never sum frames.",
               "results": []}
+
+    def save_report():
+        write_report_atomic(output / "report.json", report)
+
+    save_report()
     try:
         if not torch.cuda.is_available():
             raise ValueError("CUDA unavailable")
@@ -167,6 +209,7 @@ def main():
                     "count": float(density.sum(dtype=np.float64)), "negative_mass": float(np.minimum(density, 0).sum(dtype=np.float64)),
                     "tile_count": tile_count, "inference_seconds": elapsed,
                     "density_file": file.name, "density_sha256": sha256(file)})
+                save_report()
         report["status"] = "complete"
     except Exception as error:
         report.update(status="failed", error=f"{type(error).__name__}: {error}")
@@ -175,7 +218,7 @@ def main():
         report.update(total_seconds=time.monotonic() - started,
             max_rss_kib=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
             peak_cuda_bytes=torch.cuda.max_memory_allocated() if torch.cuda.is_available() else 0)
-        (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
+        save_report()
     print(json.dumps(report))
 
 
