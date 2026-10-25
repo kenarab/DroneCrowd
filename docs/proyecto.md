@@ -13,6 +13,7 @@ modelo está validado todavía como estimador de la asistencia total a una march
 - [Cómo mirar y corregir las anotaciones provisionales](revision-visual-anotaciones-2026-10-25.md).
 - [Modelo original sobre las ocho fotos completas](inferencia-fotos-completas-2026-10-25.md).
 - [Primera prueba SR, tamaños de pesos y tiempos de video](prueba-sr-2026-10-25.md).
+- [SR, CLIP-EBC y MPCount sobre los mismos tres cuadros 4K](comparacion-tres-modelos-video-2026-10-25.md).
 
 ## Recuperación y primeras pruebas
 

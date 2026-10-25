@@ -2,6 +2,7 @@
 
 [Nota sobre upscaling, escala y personas dispersas](resolucion-y-densidad.md).
 [Primera prueba ejecutada de SR y tiempos de video](../prueba-sr-2026-10-25.md).
+[Los tres candidatos ejecutados sobre el mismo tramo](../comparacion-tres-modelos-video-2026-10-25.md).
 
 Consulta inicial:25/10/2026. Hay alternativas posteriores a STNNet que merecen
 comparación. Ninguna está validada todavía para nuestros videos de Buenos Aires.
@@ -14,8 +15,8 @@ determina el resultado.
 | Trabajo | Tarea y motivo para estudiarlo | Disponibilidad comprobada | Estado local |
 | --- | --- | --- | --- |
 | [SR, CVPR2026](https://github.com/wbshu/SR) | Conteo por cuadro en video; incluye DroneCrowd y regularización temporal durante entrenamiento | Código MIT; release v1 `dronecrowd.tar`, hash comprobado | Ejecutado: ocho controles y tres cuadros nativos; calidad local sin validar |
-| [CLIP-EBC, ICME2025](https://arxiv.org/abs/2403.09281) | Conteo supervisado de multitudes por clasificación de bloques y densidad; otra familia de representación | [Código MIT y pesos/logs](https://github.com/Yiming-M/CLIP-EBC); repo archivado22/10/2026 | Segunda auditoría propuesta; variante por fijar |
-| [MPCount, CVPR2024](https://openaccess.thecvf.com/content/CVPR2024/html/Peng_Single_Domain_Generalization_for_Crowd_Counting_CVPR_2024_paper.html) | Transferencia entre dominios y ambigüedad entre personas y fondo | [Código Apache-2.0 y enlaces a pesos](https://github.com/Shimmer93/MPCount) | Alternativa si la evaluación prioriza cambio de dominio |
+| [CLIP-EBC, ICME2025](https://arxiv.org/abs/2403.09281) | Conteo supervisado de multitudes por clasificación de bloques y densidad; otra familia de representación | [Código MIT y pesos/logs](https://github.com/Yiming-M/CLIP-EBC); repo archivado22/10/2026 | NWPU ResNet50 ejecutado en tres cuadros; anomalía del paquete ViT actual documentada |
+| [MPCount, CVPR2024](https://openaccess.thecvf.com/content/CVPR2024/html/Peng_Single_Domain_Generalization_for_Crowd_Counting_CVPR_2024_paper.html) | Transferencia entre dominios y ambigüedad entre personas y fondo | [Código Apache-2.0 y enlaces a pesos](https://github.com/Shimmer93/MPCount) | STA determinista ejecutado en tres cuadros; calidad local pendiente |
 | [MovingDroneCrowd, ICCV2025](https://github.com/fyw1999/MovingDroneCrowd) | Individuos únicos a través del video, con cámara móvil | Enlaces de pesos; ficha CC-BY-NC-4.0; SDNet disponible reentrenado | Otra tarea: requiere especificación y evaluación temporal |
 | [P2RLoss, CVPR2025](https://arxiv.org/abs/2505.21943) | Cómo supervisar fondo y puntos con pocos datos completos | [Código](https://github.com/Elin24/P2RLoss); licencia y checkpoints sin verificar | Referencia metodológica, no ejecución inmediata |
 
@@ -57,7 +58,8 @@ ayudan a revisar y no se convierten por sí solas en referencia verdadera.
 
 No se eligió aún una arquitectura híbrida, no se descargaron datasets nuevos y
 no se necesita regenerar todos los HDF5. La primera prueba SR tiene SPEC012 y
-resultados propios; los demás candidatos siguen pendientes de ejecución.
+resultados propios; SPEC013 incorpora CLIP-EBC y MPCount en el mismo tramo nativo.
+No se ha validado la precisión local de ninguno.
 
 ## Reproducibilidad y revisión
 
