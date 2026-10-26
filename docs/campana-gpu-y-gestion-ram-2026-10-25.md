@@ -102,10 +102,12 @@ una recuperación de32MiB por firma de solicitudes, presupuesto durable de108
 acciones/8h, identidades comprobadas, sin worker/decodificador y con parada si no
 resuelve el gate. No ejecuta GPU ni cambia el plan científico.
 
-Actualización posterior: el auxiliar se revisó y activó con High32/Max64MiB,
-swap0 yCPU10%, conservando presupuestos persistentes y guardas. La campaña
-alcanzó12 trabajos completos y192 predicciones/mapas verificados:64 de563 cuadros
-con los tres modelos. Después una recuperación no resolvió el gate en45s;
+Actualización posterior: la campaña ya había alcanzado12 trabajos completos y192
+predicciones/mapas verificados (64 de563cuadros con los tres modelos) antes de
+activar el auxiliar. El último completed terminó en1792976877,40 y el auxiliar
+arrancó en1792977015,44; no atribuir esos avances al auxiliar automático. Luego
+se activó con High32/Max64MiB, swap0 yCPU10%, conservando guardas y presupuestos.
+Una recuperación posterior no resolvió el gate en45s;
 el auxiliar detuvo al coordinador y éste canceló tres solicitudes sin iniciar.
 Los12 resultados completos se conservan; no hubo informes de inferencia fallidos.
 No se relajan guardas ni se reenvían automáticamente los IDs cancelados.
