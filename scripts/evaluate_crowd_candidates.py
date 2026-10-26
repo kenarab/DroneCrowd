@@ -1,5 +1,6 @@
 """Compare frozen crowd counters on identical native frames with bounded streaming."""
 import argparse
+from fractions import Fraction
 import json
 import math
 import os
@@ -23,15 +24,16 @@ FROZEN_CHECKPOINTS = {
 }
 
 
-def validated_inputs(path, expected_hash):
+def validated_inputs(path, expected_hash, full_video_block=False):
     if path.stat().st_size > 256 * 1024:
         raise ValueError("Manifest too large")
     if not re.fullmatch(r"[0-9a-f]{64}", expected_hash) or sha256(path) != expected_hash:
         raise ValueError("Input manifest hash mismatch")
     manifest = json.loads(path.read_text())
     frames = manifest["frames"]
-    if not isinstance(frames, list) or not 1 <= len(frames) <= 3:
-        raise ValueError("This process allows one to three frames")
+    maximum = 16 if full_video_block else 3
+    if not isinstance(frames, list) or not 1 <= len(frames) <= maximum:
+        raise ValueError(f"This process allows one to {maximum} frames")
     indices = set()
     for frame in frames:
         if (type(frame["width"]) is not int or type(frame["height"]) is not int
@@ -43,6 +45,14 @@ def validated_inputs(path, expected_hash):
                 or type(frame["pts_seconds"]) not in (int, float) or not math.isfinite(frame["pts_seconds"])):
             raise ValueError("Invalid bounded frame geometry or identity")
         indices.add(frame["index"])
+    if full_video_block:
+        for index, frame in enumerate(frames):
+            if (frame["index"] != index or type(frame.get("source_ordinal")) is not int
+                    or frame["source_ordinal"] < 0 or type(frame.get("pts")) is not int
+                    or not re.fullmatch(r"[1-9][0-9]*/[1-9][0-9]*", str(frame.get("time_base", "")))
+                    or frame["pts_seconds"] != float(frame["pts"] * Fraction(frame["time_base"]))
+                    or (index and frame["source_ordinal"] != frames[index-1]["source_ordinal"]+1)):
+                raise ValueError("Full video block requires consecutive ordinals and original PTS")
     return manifest
 
 
@@ -123,13 +133,18 @@ def main():
     parser.add_argument("--checkpoint-sha256", required=True)
     parser.add_argument("--clip-source", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--full-video-block", action="store_true")
+    parser.add_argument("--rgb-root", type=Path)
     args = parser.parse_args()
     started = time.monotonic()
     deadline = started + 115
     torch.set_num_threads(1)
     if args.checkpoint_sha256 != FROZEN_CHECKPOINTS[args.model]:
         raise ValueError("This experiment requires the frozen model checkpoint hashes")
-    manifest = validated_inputs(args.input, args.expected_input_sha256)
+    manifest = validated_inputs(args.input, args.expected_input_sha256, args.full_video_block)
+    if args.rgb_root is not None and not args.full_video_block:
+        raise ValueError("Separate RGB cache requires an explicit full video block")
+    rgb_root = args.rgb_root if args.rgb_root is not None else args.input.parent
     frames = manifest["frames"]
     output = args.output_dir.resolve()
     if args.input.resolve().is_relative_to(output):
@@ -196,7 +211,7 @@ def main():
             report["load_and_warmup_seconds"] = time.monotonic() - started
             torch.cuda.reset_peak_memory_stats()
             for index, frame in enumerate(frames):
-                rgb = read_rgb(args.input.parent / frame["rgb_file"], frame["width"], frame["height"], frame["rgb_sha256"])
+                rgb = read_rgb(rgb_root / frame["rgb_file"], frame["width"], frame["height"], frame["rgb_sha256"])
                 torch.cuda.synchronize()
                 tick = time.monotonic()
                 density, tile_count = assembler(rgb, predict, deadline)
@@ -209,7 +224,12 @@ def main():
                     "count": float(density.sum(dtype=np.float64)), "negative_mass": float(np.minimum(density, 0).sum(dtype=np.float64)),
                     "tile_count": tile_count, "inference_seconds": elapsed,
                     "density_file": file.name, "density_sha256": sha256(file)})
+                if args.full_video_block:
+                    report["results"][-1].update({key: frame[key] for key in
+                        ("source_ordinal", "pts", "time_base")})
                 save_report()
+                # Release the previous frame/map before reading the next RGB.
+                del rgb, density
         report["status"] = "complete"
     except Exception as error:
         report.update(status="failed", error=f"{type(error).__name__}: {error}")

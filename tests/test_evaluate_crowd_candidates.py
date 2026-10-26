@@ -82,6 +82,20 @@ class BatchContractTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validated_inputs(path, sha256(path))
 
+    def test_full_video_block_requires_consecutive_ordinals_and_bounds(self):
+        frames = [dict(self.frame, index=i, source_ordinal=32+i,
+                       pts=32032+i*1001, pts_seconds=(32032+i*1001)/60000,
+                       time_base="1/60000") for i in range(16)]
+        path = self.manifest(frames)
+        self.assertEqual(len(validated_inputs(path, sha256(path), True)["frames"]), 16)
+        for invalid in [frames+[dict(frames[-1], index=16, source_ordinal=48)],
+                        [dict(frames[0], source_ordinal=-1)],
+                        [frames[0], dict(frames[1], source_ordinal=34)],
+                        [dict(frames[0], pts=1.5)], [dict(frames[0], time_base="0/0")]]:
+            path = self.manifest(invalid)
+            with self.assertRaises(ValueError):
+                validated_inputs(path, sha256(path), True)
+
     def test_report_preserves_progress_when_next_write_is_invalid(self):
         path = self.root / "report.json"
         good = {"status": "started", "results": [{"count": 1.0}]}

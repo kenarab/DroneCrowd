@@ -445,16 +445,18 @@ def run_job(*, plan_path, plan_sha256, job_id, environment_lock, repo_root=ROOT,
             executable=None, started_at=None, monotonic=time.monotonic,
             subprocess_run=subprocess.run, cgroup_reader=None, cgroup_fs=Path("/sys/fs/cgroup"),
             environment=None, package_version_lookup=None,
-            process_runner=run_bounded_process):
+            process_runner=run_bounded_process, plan_loader=load_plan,
+            job_selector=select_job, command_builder=command_for_job,
+            completion_checker=completed_output):
     repo_root = Path(repo_root).resolve()
     started_at = monotonic() if started_at is None else started_at
-    plan = load_plan(plan_path, plan_sha256, repo_root=repo_root)
-    job = select_job(plan, job_id)
+    plan = plan_loader(plan_path, plan_sha256, repo_root=repo_root)
+    job = job_selector(plan, job_id)
     clip_root = verify_code_digests(plan, repo_root=repo_root)
     paths = verify_job_files(job, repo_root=repo_root)
     input_path, checkpoint_path, output_path = paths
     if output_path.exists():
-        if completed_output(output_path, job, input_path, plan):
+        if completion_checker(output_path, job, input_path, plan):
             return {"status": "complete", "already_complete": True, "job_id": job_id}
         raise FileExistsError("Output exists but is not a verified complete result; require a new attempt/output path")
     lock_path = Path(environment_lock).resolve(strict=True)
@@ -484,7 +486,7 @@ def run_job(*, plan_path, plan_sha256, job_id, environment_lock, repo_root=ROOT,
     status_path = attempt_dir/"status.jsonl"
     stdout_path, stderr_path = attempt_dir/"stdout.log", attempt_dir/"stderr.log"
     _append_status(status_path, "starting", job_id=job_id, model=job["model"])
-    cmd = command_for_job(job, paths, executable=executable, clip_source=clip_root)
+    cmd = command_builder(job, paths, executable=executable, clip_source=clip_root)
     remaining = MAX_JOB_SECONDS-(monotonic()-started_at)
     if remaining <= 0:
         _append_status(status_path, "failed", reason="budget exhausted before runner")
@@ -500,7 +502,7 @@ def run_job(*, plan_path, plan_sha256, job_id, environment_lock, repo_root=ROOT,
             _append_status(status_path, "failed", returncode=result.returncode)
             failure_recorded = True
             raise subprocess.CalledProcessError(result.returncode, cmd)
-        if not completed_output(output_path, job, input_path, plan):
+        if not completion_checker(output_path, job, input_path, plan):
             _append_status(status_path, "failed", reason="runner output did not verify complete")
             failure_recorded = True
             raise RuntimeError("Runner returned success without a verifiable complete report")
