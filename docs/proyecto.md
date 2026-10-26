@@ -19,6 +19,7 @@ modelo está validado todavía como estimador de la asistencia total a una march
 - [Resultado extendido:69 trabajos GPU y44 instantes de tres videos](resultado-validacion-extendida-2026-10-25.md).
 - [Plan para todos los cuadros: tiempos, recursos y cola para los tres modelos](plan-videos-completos-2026-10-25.md).
 - [Primera campaña completa: 563 cuadros 4K del video 0269](../sdd/018-campana-video-0269/SPEC.md).
+- [Explicación de la campaña, bloqueos de RAM y pedido de evaluar paralelismo](campana-gpu-y-gestion-ram-2026-10-25.md).
 
 ## Recuperación y primeras pruebas
 
